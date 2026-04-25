@@ -1,0 +1,20 @@
+cat > .gitignore << 'EOF'
+# Dependencies
+app/node_modules/
+app/.next/
+
+# Environment
+app/.env.local
+app/.env
+
+# OpenMetadata volumes (large, generated data)
+openmetadata/docker-volume/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+EOF
