@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Activity, FileText, Tag, Table2 } from "lucide-react";
+import { Loader2, Activity, FileText, Tag, Table2, LayoutDashboard, Workflow, Radio, Brain, FlaskConical, GitFork, BookOpen } from "lucide-react";
+import Link from "next/link";
 
 type Metrics = {
   totalTables: number;
@@ -16,21 +17,45 @@ type Metrics = {
   tablesWithTags: number;
 };
 
+type EntityCounts = {
+  tables: number;
+  dashboards: number;
+  pipelines: number;
+  topics: number;
+  mlModels: number;
+  total: number;
+};
+
+type QualityStats = {
+  totalSuites: number;
+  totalCases: number;
+  totalPassed: number;
+  totalFailed: number;
+  passRate: number;
+};
+
 export default function Dashboard() {
   const [score, setScore] = useState(0);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [entities, setEntities] = useState<EntityCounts | null>(null);
+  const [quality, setQuality] = useState<QualityStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [animatedScore, setAnimatedScore] = useState(0);
 
   useEffect(() => {
-    fetch("/api/health")
-      .then((r) => r.json())
-      .then((d) => {
-        setScore(d.score);
-        setMetrics(d.metrics);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    Promise.allSettled([
+      fetch("/api/health").then((r) => r.json()),
+      fetch("/api/entities").then((r) => r.json()),
+      fetch("/api/quality").then((r) => r.json()),
+    ]).then(([health, ents, qual]) => {
+      if (health.status === "fulfilled" && !health.value.error) {
+        setScore(health.value.score);
+        setMetrics(health.value.metrics);
+      }
+      if (ents.status === "fulfilled" && !ents.value.error) setEntities(ents.value);
+      if (qual.status === "fulfilled" && !qual.value.error) setQuality(qual.value.stats);
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -89,11 +114,35 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold">Governance Dashboard</h1>
           </div>
           <p className="text-zinc-400">
-            Real-time governance health score computed from your OpenMetadata instance.
+            Real-time governance health across your entire OpenMetadata catalog.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Entity Catalog Counts */}
+        {entities && (
+          <div className="mb-8">
+            <h2 className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Catalog Overview</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {[
+                { label: "Tables", value: entities.tables, icon: <Table2 className="w-4 h-4 text-blue-400" />, href: "/pii-scanner" },
+                { label: "Dashboards", value: entities.dashboards, icon: <LayoutDashboard className="w-4 h-4 text-purple-400" />, href: null },
+                { label: "Pipelines", value: entities.pipelines, icon: <Workflow className="w-4 h-4 text-orange-400" />, href: null },
+                { label: "Topics", value: entities.topics, icon: <Radio className="w-4 h-4 text-cyan-400" />, href: null },
+                { label: "ML Models", value: entities.mlModels, icon: <Brain className="w-4 h-4 text-pink-400" />, href: null },
+              ].map((e) => (
+                <Card key={e.label} className="p-4 border-zinc-800 bg-zinc-900">
+                  <div className="flex items-center gap-2 mb-1">
+                    {e.icon}
+                    <span className="text-xs text-zinc-500">{e.label}</span>
+                  </div>
+                  <p className="text-2xl font-bold text-zinc-100">{e.value}</p>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Score Ring */}
           <Card className="p-8 border-zinc-800 bg-zinc-900 flex flex-col items-center justify-center">
             <div className="relative w-52 h-52">
@@ -163,8 +212,75 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Data Quality Summary */}
+        {quality && (
+          <Card className="mb-8 p-6 border-zinc-800 bg-zinc-900">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <FlaskConical className="w-4 h-4 text-violet-400" />
+                <h3 className="font-semibold text-zinc-200">Data Quality</h3>
+              </div>
+              <Link href="/quality" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+                View details →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                { label: "Test Suites", value: quality.totalSuites },
+                { label: "Total Tests", value: quality.totalCases },
+                { label: "Passed", value: quality.totalPassed, green: true },
+                { label: "Failed", value: quality.totalFailed, red: true },
+              ].map((q) => (
+                <div key={q.label} className="text-center">
+                  <p className={`text-2xl font-bold ${q.green ? "text-green-400" : q.red ? "text-red-400" : "text-zinc-100"}`}>
+                    {q.value}
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-0.5">{q.label}</p>
+                </div>
+              ))}
+            </div>
+            {quality.totalCases > 0 && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs text-zinc-500 mb-1.5">
+                  <span>Pass Rate</span>
+                  <span className={quality.passRate >= 80 ? "text-green-400" : quality.passRate >= 50 ? "text-yellow-400" : "text-red-400"}>
+                    {quality.passRate}%
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${getBarColor(quality.passRate)}`}
+                    style={{ width: `${quality.passRate}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Quick Links */}
+        <h2 className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+          {[
+            { href: "/pii-scanner", label: "Scan PII", icon: <Tag className="w-4 h-4 text-emerald-400" />, desc: "Auto-tag sensitive columns" },
+            { href: "/glossary", label: "Glossary AI", icon: <BookOpen className="w-4 h-4 text-amber-400" />, desc: "Link business terms" },
+            { href: "/lineage", label: "Lineage", icon: <GitFork className="w-4 h-4 text-blue-400" />, desc: "Explore dependencies" },
+            { href: "/quality", label: "Quality", icon: <FlaskConical className="w-4 h-4 text-violet-400" />, desc: "View test health" },
+          ].map((a) => (
+            <Link key={a.href} href={a.href}>
+              <Card className="p-4 border-zinc-800 bg-zinc-900 hover:bg-zinc-800/70 transition-colors cursor-pointer h-full">
+                <div className="flex items-center gap-2 mb-1.5">
+                  {a.icon}
+                  <span className="text-sm font-medium text-zinc-200">{a.label}</span>
+                </div>
+                <p className="text-xs text-zinc-500">{a.desc}</p>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
         {/* Score Formula */}
-        <Card className="mt-8 p-6 border-zinc-800 bg-zinc-900">
+        <Card className="p-6 border-zinc-800 bg-zinc-900">
           <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">
             Score Formula
           </h3>
