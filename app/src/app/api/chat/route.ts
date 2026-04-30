@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getTables, getTableByFqn, getLineage, searchTables } from "@/lib/openmetadata";
+import { DEMO_TABLES } from "@/lib/demo-data";
 import { NextResponse } from "next/server";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -11,36 +12,53 @@ async function executeQuery(intent: string, query: string) {
       return JSON.stringify(results.hits?.hits?.map((h: { _source: unknown }) => h._source) || []);
     }
     if (intent === "list_tables") {
-      const data = await getTables(50);
-      return JSON.stringify(data.data?.map((t: { name: string; fullyQualifiedName: string; description: string; columns: { name: string }[] }) => ({
-        name: t.name,
-        fqn: t.fullyQualifiedName,
-        description: t.description,
-        columnCount: t.columns?.length || 0,
-        columns: t.columns?.map((c: { name: string }) => c.name) || [],
-      })) || []);
+      try {
+        const data = await getTables(50);
+        if (data.data && data.data.length > 0) {
+          return JSON.stringify(data.data.map((t: { name: string; fullyQualifiedName: string; description: string; columns: { name: string }[] }) => ({
+            name: t.name, fqn: t.fullyQualifiedName, description: t.description,
+            columnCount: t.columns?.length || 0, columns: t.columns?.map((c: { name: string }) => c.name) || [],
+          })));
+        }
+      } catch { /* fall through to demo */ }
+      return JSON.stringify(DEMO_TABLES.data.map((t) => ({
+        name: t.name, fqn: t.fullyQualifiedName, description: t.description,
+        columnCount: t.columns.length, columns: t.columns.map((c) => c.name),
+      })));
     }
     if (intent === "table_details") {
-      const table = await getTableByFqn(query);
-      return JSON.stringify({
-        name: table.name,
-        fqn: table.fullyQualifiedName,
-        description: table.description,
-        columns: table.columns?.map((c: { name: string; dataType: string; description: string; tags: { tagFQN: string }[] }) => ({
-          name: c.name,
-          type: c.dataType,
-          description: c.description,
-          tags: c.tags?.map((t: { tagFQN: string }) => t.tagFQN) || [],
-        })),
-      });
+      try {
+        const table = await getTableByFqn(query);
+        return JSON.stringify({
+          name: table.name, fqn: table.fullyQualifiedName, description: table.description,
+          columns: table.columns?.map((c: { name: string; dataType: string; description: string; tags: { tagFQN: string }[] }) => ({
+            name: c.name, type: c.dataType, description: c.description,
+            tags: c.tags?.map((t: { tagFQN: string }) => t.tagFQN) || [],
+          })),
+        });
+      } catch {
+        const demoTable = DEMO_TABLES.data.find((t) => t.fullyQualifiedName === query || t.name === query.split(".").pop());
+        if (demoTable) {
+          return JSON.stringify({
+            name: demoTable.name, fqn: demoTable.fullyQualifiedName, description: demoTable.description,
+            columns: demoTable.columns.map((c) => ({
+              name: c.name, type: c.dataType, description: c.description,
+              tags: c.tags.map((t) => t.tagFQN),
+            })),
+          });
+        }
+      }
     }
     if (intent === "lineage") {
-      const lineage = await getLineage(query);
-      return JSON.stringify(lineage);
+      try {
+        const lineage = await getLineage(query);
+        return JSON.stringify(lineage);
+      } catch {
+        return JSON.stringify({ message: "Lineage data unavailable in demo mode. In production, this shows upstream and downstream table dependencies." });
+      }
     }
-  } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Query failed";
-    return JSON.stringify({ error: message });
+  } catch {
+    return JSON.stringify({ error: "Query failed" });
   }
   return "[]";
 }
@@ -52,7 +70,6 @@ export async function POST(req: Request) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // Step 1: Ask LLM to decide what data to fetch
     const planResult = await model.generateContent(`You are a metadata assistant for OpenMetadata. Given the user's question, decide what data to fetch.
 
 Available intents:
@@ -65,6 +82,8 @@ Our database has these tables:
 - sample_data.ecommerce_db.shopify.customers (customer PII, contact info, loyalty)
 - sample_data.ecommerce_db.shopify.orders (order transactions, shipping, payments)
 - sample_data.ecommerce_db.shopify.employees (employee records, payroll, tax info)
+- sample_data.ecommerce_db.shopify.products (product catalog, pricing, inventory)
+- sample_data.ecommerce_db.shopify.payments (payment transactions, card details, billing)
 
 User question: "${message}"
 
@@ -76,10 +95,8 @@ Respond ONLY with JSON, no markdown:
     if (!planMatch) throw new Error("Could not parse plan");
     const plan = JSON.parse(planMatch[0]);
 
-    // Step 2: Execute the query
     const data = await executeQuery(plan.intent, plan.query);
 
-    // Step 3: Ask LLM to answer the question using the data
     const answerResult = await model.generateContent(`You are MetaGuard AI, a friendly data governance assistant. Answer the user's question using the metadata below.
 
 Rules:
