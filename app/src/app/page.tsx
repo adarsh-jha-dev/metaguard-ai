@@ -14,6 +14,8 @@ import {
   FlaskConical,
   GitFork,
   Lock,
+  BookOpen,
+  Bell,
 } from "lucide-react";
 import { useConnection } from "@/lib/connection-context";
 import { formatCount } from "@/components/source-pill";
@@ -158,6 +160,22 @@ export default function Home() {
             cta="Explore lineage"
           />
           <FeatureCard
+            href="/glossary"
+            icon={<BookOpen className="w-5 h-5 text-amber-400" />}
+            accent="amber"
+            title="Glossary AI"
+            body="Derives a business glossary from your own schema — every table an entity, every shared column an attribute — and writes the definitions you never got round to."
+            cta="Build a glossary"
+          />
+          <FeatureCard
+            href="/activity"
+            icon={<Bell className="w-5 h-5 text-cyan-400" />}
+            accent="cyan"
+            title="Activity Feed"
+            body="Reads your database's own statistics to show what's been written, what needs vacuuming, and which tables are scanned end to end."
+            cta="See activity"
+          />
+          <FeatureCard
             href="/chat"
             icon={<MessageSquare className="w-5 h-5 text-purple-400" />}
             accent="purple"
@@ -213,6 +231,8 @@ const ACCENTS: Record<string, string> = {
   violet: "hover:border-violet-500/30 bg-violet-500/10 border-violet-500/20 text-violet-400",
   blue: "hover:border-blue-500/30 bg-blue-500/10 border-blue-500/20 text-blue-400",
   purple: "hover:border-purple-500/30 bg-purple-500/10 border-purple-500/20 text-purple-400",
+  amber: "hover:border-amber-500/30 bg-amber-500/10 border-amber-500/20 text-amber-400",
+  cyan: "hover:border-cyan-500/30 bg-cyan-500/10 border-cyan-500/20 text-cyan-400",
 };
 
 function FeatureCard({
