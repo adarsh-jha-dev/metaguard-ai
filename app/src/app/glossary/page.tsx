@@ -14,7 +14,8 @@ import {
   Link2,
   AlertTriangle,
 } from "lucide-react";
-import { OpenMetadataOnlyNotice } from "@/components/openmetadata-notice";
+import { useConnection } from "@/lib/connection-context";
+import LiveGlossary from "./live-glossary";
 
 type GlossaryTerm = {
   id: string;
@@ -51,6 +52,12 @@ type ColumnSuggestion = {
 type AppliedMap = Record<string, Set<string>>;
 
 export default function GlossaryPage() {
+  const { connection } = useConnection();
+  if (connection) return <LiveGlossary />;
+  return <OpenMetadataGlossary />;
+}
+
+function OpenMetadataGlossary() {
   const [glossaries, setGlossaries] = useState<Glossary[]>([]);
   const [stats, setStats] = useState({ totalGlossaries: 0, totalTerms: 0 });
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -174,8 +181,6 @@ export default function GlossaryPage() {
             Browse business glossaries and let Gemini AI suggest relevant terms for your tables.
           </p>
         </div>
-
-        <OpenMetadataOnlyNotice feature="the business glossary" />
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">

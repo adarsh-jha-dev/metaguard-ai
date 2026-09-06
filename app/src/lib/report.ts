@@ -97,3 +97,89 @@ export function download(filename: string, contents: string, mime: string) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// ── Glossary exports ───────────────────────────────────────────────────────
+
+export type GlossaryLink = {
+  column: string;
+  term: string;
+  definition?: string;
+  reason?: string;
+};
+
+export type GlossaryExportInput = {
+  database: string;
+  schema: string;
+  table: string;
+  dialect: "postgres" | "mysql";
+  links: GlossaryLink[];
+};
+
+/**
+ * PostgreSQL only, for the same reason as the PII export: `COMMENT ON` records
+ * the term against the column without restating the column definition.
+ */
+export function toGlossaryComments({ schema, table, links }: GlossaryExportInput): string {
+  const q = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const lit = (v: string) => `'${v.replace(/'/g, "''")}'`;
+
+  if (links.length === 0) return "-- No glossary terms linked yet.";
+
+  const lines = links.map(
+    (l) =>
+      `COMMENT ON COLUMN ${q(schema)}.${q(table)}.${q(l.column)} IS ${lit(
+        `[${l.term}]${l.definition ? ` ${l.definition}` : ""}`
+      )};`
+  );
+
+  return [
+    `-- MetaGuard AI · glossary terms for ${schema}.${table}`,
+    `-- Generated ${new Date().toISOString()}`,
+    "-- COMMENT ON only annotates the catalog; it does not alter data or column definitions.",
+    "-- Review before running. Existing comments on these columns will be replaced.",
+    "",
+    ...lines,
+  ].join("\n");
+}
+
+const csv = (rows: string[][]) =>
+  rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+
+export function toGlossaryLinksCsv({ database, schema, table, links }: GlossaryExportInput): string {
+  return csv([
+    ["database", "schema", "table", "column", "term", "definition", "reason"],
+    ...links.map((l) => [database, schema, table, l.column, l.term, l.definition ?? "", l.reason ?? ""]),
+  ]);
+}
+
+/** The whole derived glossary, for handing to whatever catalog the team keeps. */
+export function toTermsCsv(
+  database: string,
+  glossaries: {
+    name: string;
+    terms: {
+      name: string;
+      description: string;
+      kind: string;
+      usedIn: string[];
+      sourceColumns: string[];
+      aiGenerated: boolean;
+    }[];
+  }[]
+): string {
+  return csv([
+    ["database", "glossary", "term", "kind", "definition", "definition_source", "used_in", "columns"],
+    ...glossaries.flatMap((g) =>
+      g.terms.map((t) => [
+        database,
+        g.name,
+        t.name,
+        t.kind,
+        t.description,
+        t.description ? (t.aiGenerated ? "gemini" : "database comment") : "undefined",
+        t.usedIn.join("; "),
+        t.sourceColumns.join("; "),
+      ])
+    ),
+  ]);
+}

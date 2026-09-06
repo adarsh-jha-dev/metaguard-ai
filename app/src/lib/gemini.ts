@@ -124,3 +124,32 @@ Write a brief, professional summary (2-4 sentences) highlighting key governance-
   const result = await model.generateContent(prompt);
   return result.response.text().trim();
 }
+
+/**
+ * Writes business definitions for glossary terms derived from a live schema.
+ *
+ * Only names, types and the tables a term came from are sent — the same
+ * structure-only contract the rest of the connected-database features keep.
+ */
+export async function defineGlossaryTerms(
+  database: string,
+  terms: Array<{ fqn: string; name: string; kind: "entity" | "attribute"; context: string }>
+) {
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  const prompt = `You are a data governance expert writing a business glossary for the database "${database}".
+
+Write a one-sentence business definition for each term below. Definitions are read by analysts, not engineers: describe what the concept means to the business, not how it is stored. Never invent facts about the data's contents — you can only see structure.
+
+Terms (with what each was derived from):
+${terms.map((t) => `- [${t.fqn}] ${t.context}`).join("\n")}
+
+Respond ONLY with a valid JSON array, no markdown, no backticks:
+[{"fqn": "the fqn in brackets", "definition": "one sentence"}]`;
+
+  const result = await model.generateContent(prompt);
+  const text = result.response.text();
+  const jsonMatch = text.match(/\[[\s\S]*\]/);
+  if (!jsonMatch) throw new Error("No JSON in LLM response");
+  return JSON.parse(jsonMatch[0]) as Array<{ fqn: string; definition: string }>;
+}
