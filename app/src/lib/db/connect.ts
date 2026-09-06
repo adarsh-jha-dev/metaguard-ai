@@ -150,7 +150,7 @@ export async function resolveSafeHost(host: string): Promise<string> {
     );
   }
 
-  return addresses[0];
+  return addresses.find((a) => net.isIP(a) === 4) ?? addresses[0];
 }
 
 // ── Query interface ────────────────────────────────────────────────────────
@@ -325,6 +325,15 @@ export function toFriendlyError(e: unknown, conn: Connection): ConnectionError {
     );
   if (code === "ENOTFOUND" || code === "EAI_AGAIN")
     return new ConnectionError(`Host "${conn.host}" could not be found.`);
+  if (code === "EADDRNOTAVAIL" || code === "ENETUNREACH" || code === "EHOSTUNREACH") {
+    const ipv6 = /:[0-9a-f]*:/i.test(msg);
+    return new ConnectionError(
+      `Could not open a route to ${conn.host}:${conn.port}.`,
+      ipv6
+        ? "This host only publishes an IPv6 address, and this server has no IPv6 connectivity. Supabase users: swap the direct connection for the pooler URL from Dashboard → Connect → Transaction pooler (aws-N-<region>.pooler.supabase.com, user postgres.<project-ref>), which is reachable over IPv4."
+        : "The database is not reachable from this network."
+    );
+  }
   if (code === "28P01" || code === "ER_ACCESS_DENIED_ERROR" || /password authentication failed|access denied/i.test(msg))
     return new ConnectionError("Authentication failed — check the username and password.");
   if (code === "3D000" || code === "ER_BAD_DB_ERROR" || /database .* does not exist|unknown database/i.test(msg))
