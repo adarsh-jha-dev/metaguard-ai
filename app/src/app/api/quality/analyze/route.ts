@@ -12,9 +12,11 @@ export async function POST(req: Request) {
     // to extract table and column names
     const parsed = failingTests.map((t: Record<string, unknown>) => {
       const link = t.entityLink as string | undefined;
-      let table = "unknown";
-      let column: string | undefined;
-      if (link) {
+      // Live-database checks already carry table/column; OpenMetadata tests
+      // encode them in an entityLink that needs parsing.
+      let table = (t.table as string) || "unknown";
+      let column = t.column as string | undefined;
+      if (link && table === "unknown") {
         const match = link.match(/::([\w.]+)(?:::([\w.]+))?>/);
         if (match) {
           table = match[1];

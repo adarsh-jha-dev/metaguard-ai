@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Activity, Sparkles, MessageSquare, Database, LayoutDashboard, Workflow, Radio, RefreshCw } from "lucide-react";
+import { OpenMetadataOnlyNotice } from "@/components/openmetadata-notice";
 
 type FeedItem = {
   id: string;
@@ -98,6 +99,8 @@ export default function ActivityPage() {
             Real-time conversations, tasks, and announcements from your OpenMetadata instance.
           </p>
         </div>
+
+        <OpenMetadataOnlyNotice feature="the activity feed" />
 
         {/* AI Summary Card */}
         <Card className="p-5 border-zinc-800 bg-zinc-900 mb-8">

@@ -145,3 +145,53 @@ export const DEMO_SCAN_RESULTS: Record<string, { column: string; classification:
     { column: "processed_at", classification: "NotPII", confidence: 0.95, reason: "Processing timestamp, not personal" },
   ],
 };
+// ── Fallbacks for the OpenMetadata-only pages ──────────────────────────────
+// Without these, Activity and Lineage return a 500 whenever OpenMetadata is
+// unreachable — which is the normal state of the public demo deployment.
+
+const HOUR = 3600_000;
+const ago = (hours: number) => Date.now() - hours * HOUR;
+
+export const DEMO_ACTIVITY = {
+  items: [
+    { id: "demo-a1", entityType: "table", entityName: "sample_data.ecommerce_db.shopify.customers", type: "Conversation", createdBy: "alice", updatedAt: ago(2), postCount: 3, latestMessage: "Tagged ssn and credit_card_number as PII.Sensitive after the quarterly audit." },
+    { id: "demo-a2", entityType: "table", entityName: "sample_data.ecommerce_db.shopify.payments", type: "Task", createdBy: "bob", updatedAt: ago(6), postCount: 1, latestMessage: "Requesting a description for the payments table — it has no owner listed." },
+    { id: "demo-a3", entityType: "table", entityName: "sample_data.ecommerce_db.shopify.orders", type: "Conversation", createdBy: "carol", updatedAt: ago(11), postCount: 2, latestMessage: "shipping_address is still untagged. Can we run the PII scanner over this one?" },
+    { id: "demo-a4", entityType: "table", entityName: "sample_data.ecommerce_db.shopify.employees", type: "Announcement", createdBy: "dana", updatedAt: ago(26), postCount: 1, latestMessage: "Payroll columns are now restricted to the finance group." },
+    { id: "demo-a5", entityType: "table", entityName: "sample_data.ecommerce_db.shopify.products", type: "Task", createdBy: "erin", updatedAt: ago(38), postCount: 2, latestMessage: "supplier_contact_email looks like PII — flagging for review." },
+  ],
+  total: 5,
+};
+
+/** Foreign-key shaped lineage over the sample tables, keyed by table FQN. */
+const DEMO_LINEAGE_EDGES: [string, string][] = [
+  ["sample_data.ecommerce_db.shopify.orders", "sample_data.ecommerce_db.shopify.customers"],
+  ["sample_data.ecommerce_db.shopify.payments", "sample_data.ecommerce_db.shopify.orders"],
+  ["sample_data.ecommerce_db.shopify.orders", "sample_data.ecommerce_db.shopify.products"],
+];
+
+export function demoLineage(fqn: string) {
+  const known = DEMO_TABLES.data.find((t) => t.fullyQualifiedName === fqn);
+  if (!known) return null;
+
+  const related = new Set<string>([fqn]);
+  for (const [from, to] of DEMO_LINEAGE_EDGES) {
+    if (from === fqn) related.add(to);
+    if (to === fqn) related.add(from);
+  }
+
+  const node = (f: string) => {
+    const t = DEMO_TABLES.data.find((x) => x.fullyQualifiedName === f);
+    return { id: t?.id ?? f, name: t?.name ?? f.split(".").pop()!, fqn: f, type: "table", isRoot: f === fqn };
+  };
+
+  const idOf = (f: string) => DEMO_TABLES.data.find((x) => x.fullyQualifiedName === f)?.id ?? f;
+
+  return {
+    nodes: [...related].map(node),
+    edges: DEMO_LINEAGE_EDGES.filter(([from, to]) => related.has(from) && related.has(to)).map(
+      ([from, to]) => ({ fromId: idOf(from), fromFqn: from, toId: idOf(to), toFqn: to })
+    ),
+    root: node(fqn),
+  };
+}

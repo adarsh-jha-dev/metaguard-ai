@@ -14,6 +14,7 @@ import {
   Link2,
   AlertTriangle,
 } from "lucide-react";
+import { OpenMetadataOnlyNotice } from "@/components/openmetadata-notice";
 
 type GlossaryTerm = {
   id: string;
@@ -173,6 +174,8 @@ export default function GlossaryPage() {
             Browse business glossaries and let Gemini AI suggest relevant terms for your tables.
           </p>
         </div>
+
+        <OpenMetadataOnlyNotice feature="the business glossary" />
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">

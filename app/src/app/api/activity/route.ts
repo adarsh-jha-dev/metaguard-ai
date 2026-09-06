@@ -1,4 +1,5 @@
 import { getActivityFeeds } from "@/lib/openmetadata";
+import { DEMO_ACTIVITY } from "@/lib/demo-data";
 import { summarizeActivity } from "@/lib/gemini";
 import { NextResponse } from "next/server";
 
@@ -49,8 +50,21 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ items: normalised, aiSummary, total: normalised.length });
-  } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    // OpenMetadata unreachable — fall back to the sample feed, as every other
+    // route does, so the page still renders on a standalone deployment.
+    let aiSummary: string | undefined;
+    if (withSummary) {
+      aiSummary = await summarizeActivity(
+        DEMO_ACTIVITY.items.map((n) => ({
+          entityType: n.entityType,
+          eventType: n.type,
+          entityName: n.entityName,
+          user: n.createdBy,
+          timestamp: new Date(n.updatedAt).toISOString(),
+        }))
+      ).catch(() => undefined);
+    }
+    return NextResponse.json({ ...DEMO_ACTIVITY, aiSummary, demo: true });
   }
 }

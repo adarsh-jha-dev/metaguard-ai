@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Send, Loader2, Sparkles, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useConnection } from "@/lib/connection-context";
+import { SourcePill } from "@/components/source-pill";
 
 type Message = {
   role: "user" | "assistant";
@@ -23,7 +25,17 @@ const EXAMPLE_PROMPTS = [
   "List all tables and their column counts",
 ];
 
+const LIVE_EXAMPLE_PROMPTS = [
+  "Which columns in this database look like personal data?",
+  "Which tables have no primary key?",
+  "How do the biggest tables relate to each other?",
+  "What would break if I dropped the users table?",
+  "Summarise this schema for someone joining the team",
+];
+
 export default function Chat() {
+  const { connection, call } = useConnection();
+  const live = Boolean(connection);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,14 +54,20 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg }),
-      });
-      const data = await res.json();
+      // When a database is connected the question is answered against its real
+      // schema; otherwise it falls back to the OpenMetadata/demo catalog.
+      const data = live
+        ? await call<{ answer: string; narrowed?: boolean; tablesConsidered?: number }>(
+            "/api/connect/chat",
+            { message: msg }
+          ).catch((e: Error) => ({ error: e.message }) as { error: string })
+        : await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg }),
+          }).then((r) => r.json());
 
-      if (data.error) {
+      if ("error" in data && data.error) {
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: `Error: ${data.error}` },
@@ -57,7 +75,15 @@ export default function Chat() {
       } else {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: data.answer, intent: data.intent },
+          {
+            role: "assistant",
+            content: data.answer,
+            intent: live
+              ? data.narrowed
+                ? `${data.tablesConsidered} relevant tables`
+                : "live schema"
+              : data.intent,
+          },
         ]);
       }
     } catch {
@@ -80,9 +106,12 @@ export default function Chat() {
               <MessageSquare className="w-5 h-5 text-purple-400" />
             </div>
             <h1 className="text-2xl font-bold">Metadata Chat</h1>
+            <SourcePill live={live} label={connection?.database} />
           </div>
           <p className="text-zinc-400">
-            Ask questions about your data in plain English — powered by AI and OpenMetadata.
+            {live
+              ? `Ask about ${connection?.database} in plain English. Gemini sees your schema — table names, columns, types, comments and foreign keys — never any row data.`
+              : "Ask questions about your data in plain English — powered by AI and OpenMetadata."}
           </p>
         </div>
 
@@ -93,7 +122,7 @@ export default function Chat() {
               <Sparkles className="w-10 h-10 text-purple-500/30 mb-4" />
               <p className="text-zinc-500 mb-6">Try one of these questions:</p>
               <div className="flex flex-wrap gap-2 justify-center max-w-lg">
-                {EXAMPLE_PROMPTS.map((prompt) => (
+                {(live ? LIVE_EXAMPLE_PROMPTS : EXAMPLE_PROMPTS).map((prompt) => (
                   <button
                     key={prompt}
                     onClick={() => sendMessage(prompt)}
@@ -170,7 +199,7 @@ export default function Chat() {
               <Card className="p-4 bg-zinc-900 border-zinc-800">
                 <div className="flex items-center gap-2 text-zinc-500 text-sm">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Querying OpenMetadata...
+                  {live ? "Reading your schema..." : "Querying OpenMetadata..."}
                 </div>
               </Card>
             </div>

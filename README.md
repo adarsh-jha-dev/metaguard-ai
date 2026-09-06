@@ -17,6 +17,14 @@ Most data teams manage hundreds of tables where **60%+ have no descriptions**, *
 
 The work of maintaining metadata is repetitive, boring, and easy to skip. MetaGuard AI automates the boring parts.
 
+## Two ways to use it
+
+**Bring your own database.** Paste a PostgreSQL or MySQL connection string and MetaGuard analyses your real schema on the spot — no signup, no account, nothing stored. Works with Supabase, Neon, Railway, PlanetScale, RDS, Aiven, or anything else reachable over the public internet. See [Connect your own database](#connect-your-own-database).
+
+**Or run it on OpenMetadata.** Point it at an OpenMetadata instance and it works across the full catalog — tables, dashboards, pipelines, glossaries, test suites and activity feeds — writing tags back through the API.
+
+Every page falls back to a built-in sample catalog, so the deployed demo is explorable without connecting anything.
+
 ## What MetaGuard Does
 
 ### 1. PII Auto-Scanner
@@ -44,6 +52,42 @@ Ask questions about your data in plain English:
 - *"What happens if I drop the customers table?"*
 
 The AI agent queries OpenMetadata's APIs (tables, lineage, search, tags) and returns structured, markdown-formatted answers.
+
+## Connect your own database
+
+The deployed instance is useful to a stranger only if they can point it at their own data. So the connect flow is built around a constraint: **there is no authentication system, and no credential is ever stored anywhere.**
+
+### How that works
+
+| Concern | How it is handled |
+|---|---|
+| **Storage** | There is no user database. Credentials arrive in one request body, open one connection, and are discarded when the request returns. Nothing is written to disk, logged, or cached. |
+| **Browser** | Credentials live in `sessionStorage` — scoped to one tab, wiped when it closes. Not `localStorage`, which would survive a browser restart. "Disconnect & forget" clears it immediately. |
+| **Write access** | Every session opens with `SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY` (Postgres) / `SET SESSION TRANSACTION READ ONLY` (MySQL). `INSERT`, `UPDATE`, `DELETE` and DDL are rejected by the server, not merely avoided by the client. |
+| **Raw SQL** | The API never accepts SQL from the browser. Table and schema names arrive as *bound parameters* to a catalog query; the identifiers interpolated into profiling SQL come back from the database's own catalog. |
+| **Row data** | Profiling issues aggregate queries only — `COUNT`, `COUNT(DISTINCT …)`, and `SUM(CASE WHEN <col> ~ '<regex>' …)`. No cell value is ever selected, returned to the browser, or sent to the AI model. Gemini sees column *names*, types and comments — never values. |
+| **SSRF** | The server refuses to dial any host resolving to a loopback, RFC1918, link-local (including `169.254.169.254`), or CGNAT address. Hostnames are resolved first and the vetted IP is dialled directly, which also closes the DNS-rebinding window. Set `ALLOW_PRIVATE_DB_HOSTS=true` to allow localhost in development. |
+| **Abuse** | Per-IP rate limiting (30 requests/minute) on `/api/connect/*`, since those routes open outbound connections on a caller's behalf. In-process state, so on serverless it raises the cost of abuse rather than eliminating it. |
+| **Caching** | All `/api/connect/*` responses are `Cache-Control: no-store` — they describe someone's private schema. |
+| **Timeouts** | 10s connect, 20s statement, with the pool torn down in a `finally` block so nothing outlives a request. |
+
+Use a read-only role if you have one: MetaGuard only ever needs `SELECT` and catalog access.
+
+### What you get on a live database
+
+A raw database has no tags, owners, or test suites to read — so each feature is re-derived from what a database *can* tell you:
+
+- **PII Scanner** combines three independent signals: a name heuristic, Gemini's read of the schema, and **value evidence** — the share of sampled values matching an email / SSN / card / IBAN / IP pattern. Value evidence outranks the others, because it's the only signal that catches personal data in a column named `field_7` or `notes`. Results export as CSV, JSON, or — for Postgres — `COMMENT ON COLUMN` statements you can review and run yourself.
+- **Governance score** is computed from table comments, column comments, primary key coverage, and declared relationships, with a ranked list of what's dragging it down.
+- **Data Quality** profiles your tables and generates the completeness, uniqueness and cardinality checks you'd otherwise write by hand. Foreign-key columns are exempt from uniqueness checks.
+- **Lineage** is built from foreign keys: what a table depends on, and what breaks if you drop it.
+- **Chat** answers questions against your real schema, structure only.
+
+Glossary and Activity remain OpenMetadata-only; those pages say so when a database is connected.
+
+### Supported engines
+
+PostgreSQL 12+ and MySQL 5.7+ / 8+ / MariaDB, over TLS by default (with `prefer` and `disable` modes, and an option to allow self-signed certificates).
 
 ## Architecture
 
@@ -103,7 +147,8 @@ MetaGuard integrates across 18+ OpenMetadata API surfaces:
 | Language | TypeScript 5 |
 | Styling | Tailwind CSS + shadcn/ui |
 | AI Model | Gemini 2.5 Flash |
-| Metadata Platform | OpenMetadata 1.12 |
+| Metadata Platform | OpenMetadata 1.12 (optional) |
+| Live databases | PostgreSQL (`pg`) · MySQL / MariaDB (`mysql2`) |
 | Markdown | react-markdown + remark-gfm |
 | Deployment | Docker (OpenMetadata) |
 
@@ -112,8 +157,8 @@ MetaGuard integrates across 18+ OpenMetadata API surfaces:
 ### Prerequisites
 
 - **Node.js** 18+ and npm
-- **Docker Desktop** with 6GB+ RAM allocated
-- **Gemini API key** — free at [aistudio.google.com](https://aistudio.google.com)
+- **Gemini API key** — free at [aistudio.google.com](https://aistudio.google.com). Optional: without it, PII classification falls back to name heuristics plus value evidence, and Chat is disabled.
+- **Docker Desktop** with 6GB+ RAM — only if you want the OpenMetadata half. To analyse your own database, or to explore the sample catalog, you don't need it.
 
 ### 1. Clone the repo
 
@@ -122,7 +167,10 @@ git clone https://github.com/YOUR_USERNAME/metaguard-ai.git
 cd metaguard-ai
 ```
 
-### 2. Start OpenMetadata
+### 2. Start OpenMetadata *(optional)*
+
+Skip this if you only want to connect your own database or explore the sample catalog.
+
 
 ```bash
 cd openmetadata
@@ -140,12 +188,18 @@ cd ../app
 npm install
 ```
 
-Create `.env.local` in the `app/` directory:
+Create `.env.local` in the `app/` directory — every variable is optional:
 
 ```
+GEMINI_API_KEY=your-gemini-api-key
+
+# Only needed for the OpenMetadata half
 OPENMETADATA_URL=http://localhost:8585/api/v1
 OPENMETADATA_TOKEN=your-jwt-token-here
-GEMINI_API_KEY=your-gemini-api-key
+
+# Allows connecting to localhost / private-network databases.
+# Leave this unset in any public deployment — it disables the SSRF guard.
+ALLOW_PRIVATE_DB_HOSTS=true
 ```
 
 ### 4. Seed sample data
@@ -193,6 +247,7 @@ metaguard-ai/
 │       │   ├── glossary/             # Glossary AI Manager
 │       │   ├── activity/             # Activity Feed
 │       │   ├── chat/                 # NL metadata chat
+│       │   ├── connect/              # Bring-your-own-database connect flow
 │       │   └── api/
 │       │       ├── tables/           # Tables listing
 │       │       ├── scan/             # PII classification
@@ -205,11 +260,27 @@ metaguard-ai/
 │       │       ├── lineage/          # Lineage graph
 │       │       ├── activity/         # Activity feed + AI summary
 │       │       ├── entities/         # Multi-entity counts
-│       │       └── chat/             # Chat agent
+│       │       ├── chat/             # Chat agent
+│       │       └── connect/          # Live-database routes (credentials never stored)
+│       │           ├── test/         # Validate credentials, list schemas
+│       │           ├── catalog/      # Schema introspection + governance score
+│       │           ├── scan/         # PII scan with value profiling
+│       │           ├── quality/      # Generated data quality checks
+│       │           ├── lineage/      # Foreign-key lineage graph
+│       │           └── chat/         # Q&A over the live schema
 │       ├── components/ui/            # shadcn/ui components
 │       └── lib/
 │           ├── openmetadata.ts       # OpenMetadata API client
-│           └── gemini.ts             # Gemini AI utilities
+│           ├── gemini.ts             # Gemini AI utilities
+│           ├── connection-context.tsx# sessionStorage-backed connection state
+│           ├── report.ts             # CSV / JSON / COMMENT ON exports
+│           └── db/
+│               ├── connect.ts        # Read-only connections + SSRF guard
+│               ├── introspect.ts     # Postgres + MySQL schema reading
+│               ├── profile.ts        # Aggregate-only column profiling
+│               ├── classify.ts       # Name + value + AI signal merging
+│               ├── insights.ts       # Governance score, quality checks
+│               └── rate-limit.ts     # Per-IP limiting on connect routes
 ├── openmetadata/
 │   └── docker-compose.yml
 └── README.md
@@ -217,12 +288,13 @@ metaguard-ai/
 
 ## Demo Flow
 
-1. **Dashboard** — Live governance score, catalog counts (tables, dashboards, pipelines, topics, ML models), and data quality summary
-2. **PII Scanner** — Select a table → Gemini classifies columns → Approve → Tags written back to OpenMetadata
-3. **Data Quality** — View test suite pass rates → Analyze failing tests → Get AI root-cause and fix suggestions
-4. **Lineage Explorer** — Enter a table FQN → See full upstream/downstream graph
-5. **Glossary AI** — Select a table → Gemini suggests glossary terms per column → Link with one click
-6. **Activity Feed** — View recent conversations and tasks → AI summarizes governance-relevant changes
-7. **Chat** — Ask "Which tables have PII but aren't fully tagged?" → AI queries OpenMetadata and answers
+1. **Connect** — Paste a Postgres/MySQL connection string → test → pick a schema. Credentials stay in the browser tab; nothing is stored server-side
+2. **Dashboard** — Governance score with a ranked list of what's dragging it down. On OpenMetadata it also shows catalog counts across dashboards, pipelines, topics and ML models
+3. **PII Scanner** — Select a table → name, value and AI signals combine → export CSV / JSON / `COMMENT ON` SQL. On OpenMetadata, approve a classification and the tag is written back through the API
+4. **Data Quality** — On a live database, profile tables to generate completeness, uniqueness and cardinality checks. On OpenMetadata, read existing test suite pass rates. Either way, AI failure analysis explains the failures
+5. **Lineage** — On a live database, the foreign-key dependency graph and what breaks if you drop a table. On OpenMetadata, the full upstream/downstream entity graph
+6. **Glossary AI** — Select a table → Gemini suggests glossary terms per column → Link with one click
+7. **Activity Feed** — View recent conversations and tasks → AI summarizes governance-relevant changes
+8. **Chat** — Ask "Which tables have no primary key, and which columns look like personal data?" → answered against your live schema (structure only, never row data) or the OpenMetadata catalog
 
 *Built for the WeMakeDevs × OpenMetadata "Back to the Metadata" Hackathon, April 2026.*

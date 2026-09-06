@@ -1,4 +1,5 @@
 import { getEntityLineage } from "@/lib/openmetadata";
+import { demoLineage } from "@/lib/demo-data";
 import { NextResponse } from "next/server";
 
 const SUPPORTED_TYPES = ["table", "dashboard", "pipeline", "topic", "mlmodel", "container"];
@@ -42,6 +43,11 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ nodes: allNodes, edges: allEdges, root: entity });
   } catch (e: unknown) {
+    // OpenMetadata unreachable — serve the sample graph if this is one of the
+    // sample tables, so the page still demonstrates something.
+    const fallback = demoLineage(fqn);
+    if (fallback) return NextResponse.json({ ...fallback, demo: true });
+
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

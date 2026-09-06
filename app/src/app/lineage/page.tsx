@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, GitFork, Search, ArrowRight, Database, LayoutDashboard, Workflow, Radio } from "lucide-react";
+import { useConnection } from "@/lib/connection-context";
+import LiveLineage from "./live-lineage";
 
 type LineageNode = {
   id: string;
@@ -45,6 +47,12 @@ const typeColor = (t: string) => {
 };
 
 export default function LineagePage() {
+  const { connection } = useConnection();
+  if (connection) return <LiveLineage />;
+  return <OpenMetadataLineage />;
+}
+
+function OpenMetadataLineage() {
   const [fqn, setFqn] = useState("");
   const [entityType, setEntityType] = useState<string>("table");
   const [nodes, setNodes] = useState<LineageNode[]>([]);

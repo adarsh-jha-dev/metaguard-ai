@@ -14,6 +14,8 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
+import { useConnection } from "@/lib/connection-context";
+import LiveQuality from "./live-quality";
 
 type Suite = {
   id: string;
@@ -51,6 +53,12 @@ type Analysis = {
 };
 
 export default function QualityPage() {
+  const { connection } = useConnection();
+  if (connection) return <LiveQuality />;
+  return <OpenMetadataQuality />;
+}
+
+function OpenMetadataQuality() {
   const [suites, setSuites] = useState<Suite[]>([]);
   const [failingCases, setFailingCases] = useState<FailingCase[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
