@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Activity, Sparkles, MessageSquare, Database, LayoutDashboard, Workflow, Radio, RefreshCw } from "lucide-react";
-import { OpenMetadataOnlyNotice } from "@/components/openmetadata-notice";
+import { useConnection } from "@/lib/connection-context";
+import LiveActivity from "./live-activity";
 
 type FeedItem = {
   id: string;
@@ -45,6 +46,12 @@ function timeAgo(ms: number) {
 }
 
 export default function ActivityPage() {
+  const { connection } = useConnection();
+  if (connection) return <LiveActivity />;
+  return <OpenMetadataActivity />;
+}
+
+function OpenMetadataActivity() {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,8 +106,6 @@ export default function ActivityPage() {
             Real-time conversations, tasks, and announcements from your OpenMetadata instance.
           </p>
         </div>
-
-        <OpenMetadataOnlyNotice feature="the activity feed" />
 
         {/* AI Summary Card */}
         <Card className="p-5 border-zinc-800 bg-zinc-900 mb-8">

@@ -153,3 +153,29 @@ Respond ONLY with a valid JSON array, no markdown, no backticks:
   if (!jsonMatch) throw new Error("No JSON in LLM response");
   return JSON.parse(jsonMatch[0]) as Array<{ fqn: string; definition: string }>;
 }
+
+/**
+ * Summarizes what a connected database's own statistics say has been happening
+ * to it. Distinct from summarizeActivity, which reads OpenMetadata's social
+ * feed of conversations and tasks.
+ */
+export async function summarizeDatabaseActivity(
+  database: string,
+  dialect: string,
+  events: Array<{ type: string; table: string; detail: string; severity: string }>
+) {
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  const prompt = `You are a database reliability engineer reviewing activity statistics for the ${dialect} database "${database}".
+
+Observations (read from the database's own catalog and statistics views):
+${events
+  .slice(0, 40)
+  .map((e) => `- [${e.severity}] ${e.type} on ${e.table}: ${e.detail}`)
+  .join("\n")}
+
+Write a brief, professional summary (3-5 sentences) covering where the write activity is concentrated, which tables need attention and why, and what a maintainer should look at first. Plain prose, no bullet points, no markdown headings. These are catalog statistics, not row data — do not speculate about what the data contains.`;
+
+  const result = await model.generateContent(prompt);
+  return result.response.text().trim();
+}
