@@ -38,11 +38,11 @@ const typeIcon = (t: string) => {
 
 const typeColor = (t: string) => {
   switch (t) {
-    case "table": return "border-blue-500/40 text-blue-300 bg-blue-500/5";
-    case "dashboard": return "border-purple-500/40 text-purple-300 bg-purple-500/5";
-    case "pipeline": return "border-orange-500/40 text-orange-300 bg-orange-500/5";
-    case "topic": return "border-cyan-500/40 text-cyan-300 bg-cyan-500/5";
-    default: return "border-zinc-700 text-zinc-400 bg-zinc-800";
+    case "table": return "border-hue-blue/40 text-hue-blue bg-hue-blue/5";
+    case "dashboard": return "border-hue-purple/40 text-hue-purple bg-hue-purple/5";
+    case "pipeline": return "border-hue-orange/40 text-hue-orange bg-hue-orange/5";
+    case "topic": return "border-hue-cyan/40 text-hue-cyan bg-hue-cyan/5";
+    default: return "border-border-strong text-muted-foreground bg-muted";
   }
 };
 
@@ -103,48 +103,48 @@ function OpenMetadataLineage() {
   const downstream = nodes.filter((n) => downstreamIds.has(n.id));
 
   const NodeCard = ({ node }: { node: LineageNode }) => (
-    <div className={`rounded-lg border p-3 ${node.isRoot ? "border-emerald-500/50 bg-emerald-500/5" : typeColor(node.type)} min-w-[160px] max-w-[200px]`}>
+    <div className={`rounded-lg border p-3 ${node.isRoot ? "border-brand/50 bg-brand/5" : typeColor(node.type)} min-w-[160px] max-w-[200px]`}>
       <div className="flex items-center gap-1.5 mb-1">
-        <span className={node.isRoot ? "text-emerald-400" : ""}>{typeIcon(node.type)}</span>
-        <Badge variant="outline" className={`text-[9px] px-1 py-0 ${node.isRoot ? "border-emerald-500/30 text-emerald-400" : typeColor(node.type)}`}>
+        <span className={node.isRoot ? "text-brand" : ""}>{typeIcon(node.type)}</span>
+        <Badge variant="outline" className={`text-xs px-1 py-0 ${node.isRoot ? "border-brand/30 text-brand" : typeColor(node.type)}`}>
           {node.type}
         </Badge>
       </div>
-      <p className="text-xs font-medium text-zinc-200 break-all leading-tight">{node.name || node.fqn?.split(".").pop()}</p>
+      <p className="text-sm font-medium text-foreground break-all leading-tight">{node.name || node.fqn?.split(".").pop()}</p>
       {node.fqn && node.fqn !== node.name && (
-        <p className="text-[10px] text-zinc-600 mt-0.5 break-all leading-tight">{node.fqn}</p>
+        <p className="text-xs text-faint-foreground mt-0.5 break-all leading-tight">{node.fqn}</p>
       )}
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <GitFork className="w-5 h-5 text-blue-400" />
+            <div className="p-2 rounded-lg bg-hue-blue/10 border border-hue-blue/20">
+              <GitFork className="w-5 h-5 text-hue-blue" />
             </div>
-            <h1 className="text-2xl font-bold">Lineage Explorer</h1>
+            <h1 className="text-3xl font-bold">Lineage Explorer</h1>
           </div>
-          <p className="text-zinc-400">
+          <p className="text-muted-foreground">
             Explore upstream and downstream data dependencies for any asset in your catalog.
           </p>
         </div>
 
         {/* Search */}
-        <Card className="p-4 border-zinc-800 bg-zinc-900 mb-8">
+        <Card className="p-4 border-border bg-card mb-8">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex gap-2">
               {ENTITY_TYPES.map((t) => (
                 <button
                   key={t}
                   onClick={() => setEntityType(t)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     entityType === t
-                      ? "bg-zinc-700 text-zinc-100"
-                      : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+                      ? "bg-border-strong text-foreground"
+                      : "text-muted-foreground hover:text-foreground-subtle hover:bg-muted"
                   }`}
                 >
                   {t}
@@ -156,10 +156,10 @@ function OpenMetadataLineage() {
                 value={fqn}
                 onChange={(e) => setFqn(e.target.value)}
                 placeholder="Enter fully qualified name, e.g. sample_data.ecommerce_db.shopify.customers"
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-600"
+                className="bg-muted border-border-strong text-foreground placeholder:text-faint-foreground"
                 onKeyDown={(e) => e.key === "Enter" && fetchLineage()}
               />
-              <Button onClick={fetchLineage} disabled={loading || !fqn.trim()} className="bg-blue-600 hover:bg-blue-700 shrink-0">
+              <Button onClick={fetchLineage} disabled={loading || !fqn.trim()} className="bg-hue-blue hover:bg-hue-blue/85 shrink-0">
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               </Button>
             </div>
@@ -169,48 +169,48 @@ function OpenMetadataLineage() {
         {/* Lineage Graph */}
         {loading && (
           <div className="flex items-center justify-center py-24">
-            <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
         )}
 
         {error && (
-          <Card className="p-6 border-zinc-800 bg-zinc-900 text-center">
-            <p className="text-red-400 text-sm">{error}</p>
-            <p className="text-zinc-600 text-xs mt-1">Check that the FQN is correct and the entity exists in OpenMetadata.</p>
+          <Card className="p-6 border-border bg-card text-center">
+            <p className="text-critical text-base">{error}</p>
+            <p className="text-faint-foreground text-sm mt-1">Check that the FQN is correct and the entity exists in OpenMetadata.</p>
           </Card>
         )}
 
         {!loading && !error && searched && (
           <>
             {nodes.length === 0 ? (
-              <Card className="p-10 border-zinc-800 bg-zinc-900 text-center text-zinc-500">
+              <Card className="p-10 border-border bg-card text-center text-muted-foreground">
                 <GitFork className="w-10 h-10 mx-auto mb-3 opacity-30" />
                 <p>No lineage data found for this entity.</p>
-                <p className="text-xs mt-1">Make sure lineage has been ingested in OpenMetadata.</p>
+                <p className="text-sm mt-1">Make sure lineage has been ingested in OpenMetadata.</p>
               </Card>
             ) : (
               <div className="space-y-6">
                 {/* Stats */}
-                <div className="flex gap-4 text-sm text-zinc-400">
+                <div className="flex gap-4 text-base text-muted-foreground">
                   <span>{upstream.length} upstream</span>
-                  <span className="text-zinc-700">·</span>
+                  <span className="text-faint-foreground">·</span>
                   <span>{downstream.length} downstream</span>
-                  <span className="text-zinc-700">·</span>
+                  <span className="text-faint-foreground">·</span>
                   <span>{edges.length} edges</span>
                 </div>
 
                 {/* Visual Flow */}
-                <Card className="p-6 border-zinc-800 bg-zinc-900 overflow-x-auto">
+                <Card className="p-6 border-border bg-card overflow-x-auto">
                   <div className="flex items-start gap-6 min-w-max">
                     {/* Upstream column */}
                     <div className="flex flex-col gap-3">
                       {upstream.length > 0 ? (
                         <>
-                          <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Upstream</p>
+                          <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Upstream</p>
                           {upstream.map((n) => <NodeCard key={n.id} node={n} />)}
                         </>
                       ) : (
-                        <div className="flex items-center justify-center w-40 h-16 text-zinc-700 text-xs">
+                        <div className="flex items-center justify-center w-40 h-16 text-faint-foreground text-sm">
                           No upstream
                         </div>
                       )}
@@ -219,14 +219,14 @@ function OpenMetadataLineage() {
                     {/* Arrow */}
                     {upstream.length > 0 && (
                       <div className="flex items-center self-center">
-                        <ArrowRight className="w-5 h-5 text-zinc-600" />
+                        <ArrowRight className="w-5 h-5 text-faint-foreground" />
                       </div>
                     )}
 
                     {/* Root */}
                     {rootNode && (
                       <div className="flex flex-col gap-2 self-center">
-                        <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Root</p>
+                        <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Root</p>
                         <NodeCard node={{ ...rootNode, isRoot: true }} />
                       </div>
                     )}
@@ -234,14 +234,14 @@ function OpenMetadataLineage() {
                     {/* Arrow */}
                     {downstream.length > 0 && (
                       <div className="flex items-center self-center">
-                        <ArrowRight className="w-5 h-5 text-zinc-600" />
+                        <ArrowRight className="w-5 h-5 text-faint-foreground" />
                       </div>
                     )}
 
                     {/* Downstream column */}
                     {downstream.length > 0 && (
                       <div className="flex flex-col gap-3">
-                        <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Downstream</p>
+                        <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Downstream</p>
                         {downstream.map((n) => <NodeCard key={n.id} node={n} />)}
                       </div>
                     )}
@@ -250,19 +250,19 @@ function OpenMetadataLineage() {
 
                 {/* Edge Table */}
                 {edges.length > 0 && (
-                  <Card className="p-5 border-zinc-800 bg-zinc-900">
-                    <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Lineage Edges</h3>
+                  <Card className="p-5 border-border bg-card">
+                    <h3 className="text-base font-medium text-muted-foreground uppercase tracking-wider mb-3">Lineage Edges</h3>
                     <div className="space-y-2">
                       {edges.map((e, i) => {
                         const fromNode = nodes.find((n) => n.id === e.fromId);
                         const toNode = nodes.find((n) => n.id === e.toId);
                         return (
-                          <div key={i} className="flex items-center gap-2 text-xs text-zinc-400 bg-zinc-800/50 rounded px-3 py-2">
-                            <span className="font-mono text-zinc-300 truncate max-w-[200px]">
+                          <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded px-3 py-2">
+                            <span className="font-mono text-foreground-subtle truncate max-w-[200px]">
                               {fromNode?.name || e.fromFqn?.split(".").pop() || e.fromId}
                             </span>
-                            <ArrowRight className="w-3 h-3 text-zinc-600 shrink-0" />
-                            <span className="font-mono text-zinc-300 truncate max-w-[200px]">
+                            <ArrowRight className="w-3 h-3 text-faint-foreground shrink-0" />
+                            <span className="font-mono text-foreground-subtle truncate max-w-[200px]">
                               {toNode?.name || e.toFqn?.split(".").pop() || e.toId}
                             </span>
                           </div>
@@ -277,7 +277,7 @@ function OpenMetadataLineage() {
         )}
 
         {!searched && !loading && (
-          <div className="text-center py-16 text-zinc-600">
+          <div className="text-center py-16 text-faint-foreground">
             <GitFork className="w-12 h-12 mx-auto mb-3 opacity-20" />
             <p>Enter a fully qualified name above and click Search to explore lineage.</p>
           </div>

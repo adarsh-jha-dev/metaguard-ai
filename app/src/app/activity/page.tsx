@@ -21,18 +21,18 @@ type FeedItem = {
 
 const entityIcon = (type: string) => {
   switch (type) {
-    case "table": return <Database className="w-3.5 h-3.5 text-blue-400" />;
-    case "dashboard": return <LayoutDashboard className="w-3.5 h-3.5 text-purple-400" />;
-    case "pipeline": return <Workflow className="w-3.5 h-3.5 text-orange-400" />;
-    case "topic": return <Radio className="w-3.5 h-3.5 text-cyan-400" />;
-    default: return <Database className="w-3.5 h-3.5 text-zinc-400" />;
+    case "table": return <Database className="w-3.5 h-3.5 text-hue-blue" />;
+    case "dashboard": return <LayoutDashboard className="w-3.5 h-3.5 text-hue-purple" />;
+    case "pipeline": return <Workflow className="w-3.5 h-3.5 text-hue-orange" />;
+    case "topic": return <Radio className="w-3.5 h-3.5 text-hue-cyan" />;
+    default: return <Database className="w-3.5 h-3.5 text-muted-foreground" />;
   }
 };
 
 const typeColor = (type: string) => {
-  if (type?.includes("Announcement")) return "border-yellow-500/30 text-yellow-400 bg-yellow-500/5";
-  if (type?.includes("Task")) return "border-blue-500/30 text-blue-400 bg-blue-500/5";
-  return "border-zinc-700 text-zinc-500 bg-zinc-800/40";
+  if (type?.includes("Announcement")) return "border-warn/30 text-warn bg-warn/5";
+  if (type?.includes("Task")) return "border-hue-blue/30 text-hue-blue bg-hue-blue/5";
+  return "border-border-strong text-muted-foreground bg-muted/40";
 };
 
 function timeAgo(ms: number) {
@@ -80,45 +80,45 @@ function OpenMetadataActivity() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                <Activity className="w-5 h-5 text-cyan-400" />
+              <div className="p-2 rounded-lg bg-hue-cyan/10 border border-hue-cyan/20">
+                <Activity className="w-5 h-5 text-hue-cyan" />
               </div>
-              <h1 className="text-2xl font-bold">Activity Feed</h1>
+              <h1 className="text-3xl font-bold">Activity Feed</h1>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => load(false)}
               disabled={loading}
-              className="border-zinc-700 text-zinc-400 hover:text-zinc-200"
+              className="border-border-strong text-muted-foreground hover:text-foreground"
             >
               <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
           </div>
-          <p className="text-zinc-400">
+          <p className="text-muted-foreground">
             Real-time conversations, tasks, and announcements from your OpenMetadata instance.
           </p>
         </div>
 
         {/* AI Summary Card */}
-        <Card className="p-5 border-zinc-800 bg-zinc-900 mb-8">
+        <Card className="p-5 border-border bg-card mb-8">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
+              <Sparkles className="w-4 h-4 text-hue-cyan" />
               <h2 className="font-semibold">AI Activity Summary</h2>
             </div>
             <Button
               size="sm"
               onClick={() => load(true)}
               disabled={summarizing || loading || items.length === 0}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white"
+              className="bg-hue-cyan hover:bg-hue-cyan/85 text-on-accent"
             >
               {summarizing ? (
                 <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Summarizing…</>
@@ -128,9 +128,9 @@ function OpenMetadataActivity() {
             </Button>
           </div>
           {aiSummary ? (
-            <p className="text-sm text-zinc-300 leading-relaxed">{aiSummary}</p>
+            <p className="text-base text-foreground-subtle leading-relaxed">{aiSummary}</p>
           ) : (
-            <p className="text-sm text-zinc-600">
+            <p className="text-base text-faint-foreground">
               {items.length === 0
                 ? "No recent activity found."
                 : "Click \"Summarize Activity\" to get an AI-generated overview of recent events."}
@@ -140,47 +140,47 @@ function OpenMetadataActivity() {
 
         {/* Stats */}
         <div className="flex items-center gap-2 mb-5">
-          <span className="text-sm text-zinc-400">{total} feed items</span>
+          <span className="text-base text-muted-foreground">{total} feed items</span>
         </div>
 
         {/* Feed */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
         ) : items.length === 0 ? (
-          <Card className="p-10 border-zinc-800 bg-zinc-900 text-center text-zinc-500">
+          <Card className="p-10 border-border bg-card text-center text-muted-foreground">
             <MessageSquare className="w-10 h-10 mx-auto mb-3 opacity-30" />
             <p>No activity feed items found.</p>
-            <p className="text-xs mt-1">Start conversations and create tasks in OpenMetadata to see them here.</p>
+            <p className="text-sm mt-1">Start conversations and create tasks in OpenMetadata to see them here.</p>
           </Card>
         ) : (
           <div className="space-y-3">
             {items.map((item) => (
               <Card
                 key={item.id}
-                className="p-4 border-zinc-800 bg-zinc-900 hover:bg-zinc-800/60 transition-colors"
+                className="p-4 border-border bg-card hover:bg-muted/60 transition-colors"
               >
                 <div className="flex items-start gap-3">
-                  <div className="mt-0.5 p-2 rounded-lg bg-zinc-800 border border-zinc-700 shrink-0">
+                  <div className="mt-0.5 p-2 rounded-lg bg-muted border border-border-strong shrink-0">
                     {entityIcon(item.entityType)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-sm font-medium text-zinc-200 truncate">{item.entityName}</span>
-                      <Badge variant="outline" className="text-[9px] border-zinc-700 text-zinc-500">
+                      <span className="text-base font-medium text-foreground truncate">{item.entityName}</span>
+                      <Badge variant="outline" className="text-xs border-border-strong text-muted-foreground">
                         {item.entityType}
                       </Badge>
                       {item.type && (
-                        <Badge variant="outline" className={`text-[9px] ${typeColor(item.type)}`}>
+                        <Badge variant="outline" className={`text-xs ${typeColor(item.type)}`}>
                           {item.type}
                         </Badge>
                       )}
                     </div>
                     {item.latestMessage && (
-                      <p className="text-xs text-zinc-400 line-clamp-2 mb-1.5">{item.latestMessage}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-1.5">{item.latestMessage}</p>
                     )}
-                    <div className="flex items-center gap-3 text-[11px] text-zinc-600">
+                    <div className="flex items-center gap-3 text-xs text-faint-foreground">
                       {item.createdBy && <span>by {item.createdBy}</span>}
                       {item.updatedAt && <span>{timeAgo(item.updatedAt)}</span>}
                       {item.postCount > 0 && (

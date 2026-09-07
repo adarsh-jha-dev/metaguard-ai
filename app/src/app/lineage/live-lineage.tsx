@@ -104,41 +104,41 @@ export default function LiveLineage() {
   const focusNode = focus ? nodeById.get(focus) : null;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <GitFork className="w-5 h-5 text-blue-400" />
+            <div className="p-2 rounded-lg bg-hue-blue/10 border border-hue-blue/20">
+              <GitFork className="w-5 h-5 text-hue-blue" />
             </div>
-            <h1 className="text-2xl font-bold">Lineage</h1>
+            <h1 className="text-3xl font-bold">Lineage</h1>
             <SourcePill live label={connection?.database} />
           </div>
-          <p className="text-zinc-400 max-w-3xl">
+          <p className="text-muted-foreground max-w-3xl">
             Built from your foreign keys. Pick a table to see what it depends on, and what would break
             if you dropped it.
           </p>
         </div>
 
         {loading && (
-          <div className="flex items-center gap-2 text-zinc-500 py-20 justify-center">
+          <div className="flex items-center gap-2 text-muted-foreground py-20 justify-center">
             <Loader2 className="w-5 h-5 animate-spin" /> Reading relationships…
           </div>
         )}
 
         {error && (
-          <Card className="p-4 bg-red-500/5 border-red-500/20">
-            <p className="text-sm text-red-300">{error}</p>
+          <Card className="p-4 bg-critical/5 border-critical/20">
+            <p className="text-base text-critical">{error}</p>
           </Card>
         )}
 
         {graph && !loading && graph.edges.length === 0 && (
-          <Card className="p-6 bg-zinc-900 border-zinc-800 mb-6">
+          <Card className="p-6 bg-card border-border mb-6">
             <div className="flex items-start gap-3">
-              <Link2Off className="w-5 h-5 text-amber-400 mt-0.5" />
+              <Link2Off className="w-5 h-5 text-hue-amber mt-0.5" />
               <div>
-                <p className="text-sm text-zinc-200 font-medium">No foreign keys declared</p>
-                <p className="text-xs text-zinc-500 mt-1 max-w-2xl">
+                <p className="text-base text-foreground font-medium">No foreign keys declared</p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
                   {graph.nodes.length} tables, none of them linked by a foreign key constraint. That is
                   itself a governance finding: without declared relationships, nothing — not MetaGuard,
                   not your ORM, not the next engineer — can tell how these tables relate.
@@ -153,12 +153,12 @@ export default function LiveLineage() {
             {/* Table picker */}
             <div className="lg:col-span-1">
               <div className="relative mb-3">
-                <Search className="w-3.5 h-3.5 text-zinc-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-faint-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
                   placeholder="Filter tables…"
-                  className="bg-zinc-900 border-zinc-800 pl-9 h-9 text-sm"
+                  className="bg-card border-border pl-9 h-9 text-base"
                 />
               </div>
               <div className="space-y-1.5 max-h-[70vh] overflow-y-auto pr-1">
@@ -170,15 +170,15 @@ export default function LiveLineage() {
                       onClick={() => setFocus(n.id)}
                       className={`w-full text-left p-3 rounded-lg border transition-colors cursor-pointer ${
                         focus === n.id
-                          ? "bg-blue-500/10 border-blue-500/40"
-                          : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
+                          ? "bg-hue-blue/10 border-hue-blue/40"
+                          : "bg-card border-border hover:border-border-strong"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm text-zinc-200 truncate font-mono">{n.name}</span>
-                        <span className="text-[10px] text-zinc-600 shrink-0">{connections} links</span>
+                        <span className="text-base text-foreground truncate font-mono">{n.name}</span>
+                        <span className="text-xs text-faint-foreground shrink-0">{connections} links</span>
                       </div>
-                      <p className="text-[10px] text-zinc-600 mt-0.5">
+                      <p className="text-xs text-faint-foreground mt-0.5">
                         {n.type === "VIEW" ? "view · " : ""}
                         {n.columns} cols
                         {n.approxRows ? ` · ~${formatCount(n.approxRows)} rows` : ""}
@@ -201,29 +201,29 @@ export default function LiveLineage() {
                     direction="up"
                   />
 
-                  <Card className="p-5 border-blue-500/40 bg-blue-500/5">
+                  <Card className="p-5 border-hue-blue/40 bg-hue-blue/5">
                     <div className="flex items-center gap-2 mb-1">
                       {focusNode.type === "VIEW" ? (
-                        <Eye className="w-4 h-4 text-blue-300" />
+                        <Eye className="w-4 h-4 text-hue-blue" />
                       ) : (
-                        <Database className="w-4 h-4 text-blue-300" />
+                        <Database className="w-4 h-4 text-hue-blue" />
                       )}
-                      <p className="font-mono text-sm text-zinc-100">{focusNode.name}</p>
-                      <Badge variant="outline" className="border-blue-500/40 text-blue-300 text-[10px]">
+                      <p className="font-mono text-base text-foreground">{focusNode.name}</p>
+                      <Badge variant="outline" className="border-hue-blue/40 text-hue-blue text-xs">
                         {focusNode.schema}
                       </Badge>
                     </div>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-sm text-muted-foreground">
                       {focusNode.columns} columns
                       {focusNode.approxRows ? ` · ~${formatCount(focusNode.approxRows)} rows` : ""}
                     </p>
 
                     {focusEdges.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-blue-500/20 space-y-1">
+                      <div className="mt-3 pt-3 border-t border-hue-blue/20 space-y-1">
                         {focusEdges.slice(0, 8).map((e, i) => (
-                          <p key={i} className="text-[11px] text-zinc-500 font-mono">
+                          <p key={i} className="text-xs text-muted-foreground font-mono">
                             {nodeById.get(e.from)?.name ?? e.from}.{e.fromColumn}
-                            <ArrowRight className="w-3 h-3 inline mx-1.5 text-zinc-700" />
+                            <ArrowRight className="w-3 h-3 inline mx-1.5 text-faint-foreground" />
                             {nodeById.get(e.to)?.name ?? e.to}.{e.toColumn}
                           </p>
                         ))}
@@ -240,13 +240,13 @@ export default function LiveLineage() {
                   />
 
                   {downstream.flat().length > 0 && (
-                    <Card className="p-4 border-amber-500/20 bg-amber-500/5">
+                    <Card className="p-4 border-hue-amber/20 bg-hue-amber/5">
                       <div className="flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-                        <p className="text-xs text-zinc-400">
-                          Dropping <span className="font-mono text-zinc-200">{focusNode.name}</span>{" "}
+                        <AlertTriangle className="w-4 h-4 text-hue-amber mt-0.5 shrink-0" />
+                        <p className="text-sm text-muted-foreground">
+                          Dropping <span className="font-mono text-foreground">{focusNode.name}</span>{" "}
                           would affect{" "}
-                          <span className="text-amber-300">
+                          <span className="text-hue-amber">
                             {downstream.flat().length} downstream table
                             {downstream.flat().length === 1 ? "" : "s"}
                           </span>
@@ -280,21 +280,21 @@ function Column({
 }) {
   return (
     <div>
-      <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">{title}</p>
+      <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">{title}</p>
       {levels.length === 0 ? (
-        <p className="text-xs text-zinc-600">{empty}</p>
+        <p className="text-sm text-faint-foreground">{empty}</p>
       ) : (
         <div className="space-y-2">
           {levels.map((level, depth) => (
             <div key={depth} className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] text-zinc-700 w-12 shrink-0">
+              <span className="text-xs text-faint-foreground w-12 shrink-0">
                 {direction === "up" ? "−" : "+"}
                 {depth + 1} hop
               </span>
               {level.map((id) => (
                 <span
                   key={id}
-                  className="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300"
+                  className="px-2.5 py-1 rounded-md bg-card border border-border text-sm font-mono text-foreground-subtle"
                 >
                   {nodeById.get(id)?.name ?? id}
                 </span>

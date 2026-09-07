@@ -14,8 +14,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html suppressHydrationWarning lang="en" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    // The font variables belong on <html>: that is where font-sans is applied,
+    // and a variable defined on <body> is not in scope there.
+    <html
+      suppressHydrationWarning
+      lang="en"
+      className={`dark ${geistSans.variable} ${geistMono.variable}`}
+    >
+      <body className="antialiased">
         <ConnectionProvider>
           <LayoutNav>{children}</LayoutNav>
         </ConnectionProvider>

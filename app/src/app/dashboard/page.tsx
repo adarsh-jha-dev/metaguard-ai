@@ -108,8 +108,8 @@ export default function Dashboard() {
   }, [score]);
 
   const getScoreColor = (s: number) =>
-    s >= 80 ? "text-green-400" : s >= 50 ? "text-yellow-400" : "text-red-400";
-  const getBarColor = (v: number) => (v >= 80 ? "bg-green-500" : v >= 50 ? "bg-yellow-500" : "bg-red-500");
+    s >= 80 ? "text-ok" : s >= 50 ? "text-warn" : "text-critical";
+  const getBarColor = (v: number) => (v >= 80 ? "bg-ok" : v >= 50 ? "bg-warn" : "bg-critical");
   const ring = (() => {
     const circumference = 2 * Math.PI * 88;
     return { circumference, offset: circumference - (animatedScore / 100) * circumference };
@@ -117,9 +117,9 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
-        {live && <p className="text-sm text-zinc-500">Reading your schema…</p>}
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        {live && <p className="text-base text-muted-foreground">Reading your schema…</p>}
       </div>
     );
   }
@@ -127,19 +127,19 @@ export default function Dashboard() {
   const g = catalog?.governance;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-5xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-10 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <Activity className="w-5 h-5 text-emerald-400" />
+              <div className="p-2 rounded-lg bg-brand/10 border border-brand/20">
+                <Activity className="w-5 h-5 text-brand" />
               </div>
-              <h1 className="text-2xl font-bold">Governance Dashboard</h1>
+              <h1 className="text-3xl font-bold">Governance Dashboard</h1>
               <SourcePill live={live} label={connection?.database} />
             </div>
-            <p className="text-zinc-400">
+            <p className="text-muted-foreground">
               {live
                 ? `Governance health for ${connection?.database} on ${connection?.host}${connection?.schema ? ` · schema ${connection.schema}` : ""}.`
                 : "Real-time governance health across your entire OpenMetadata catalog."}
@@ -149,7 +149,7 @@ export default function Dashboard() {
             <Button
               variant="outline"
               size="sm"
-              className="border-zinc-700 text-zinc-300 cursor-pointer"
+              className="border-border-strong text-foreground-subtle cursor-pointer"
               onClick={() => void refreshCatalog()}
               disabled={catalogLoading}
             >
@@ -160,19 +160,19 @@ export default function Dashboard() {
         </div>
 
         {catalogError && (
-          <Card className="p-4 mb-6 bg-red-500/5 border-red-500/20">
-            <p className="text-sm text-red-300">{catalogError}</p>
+          <Card className="p-4 mb-6 bg-critical/5 border-critical/20">
+            <p className="text-base text-critical">{catalogError}</p>
           </Card>
         )}
 
         {!live && (
-          <Card className="p-4 mb-8 bg-sky-500/5 border-sky-500/20 flex items-center justify-between gap-4 flex-wrap">
-            <p className="text-sm text-zinc-300">
+          <Card className="p-4 mb-8 bg-hue-sky/5 border-hue-sky/20 flex items-center justify-between gap-4 flex-wrap">
+            <p className="text-base text-foreground-subtle">
               This is the built-in sample catalog. Connect a Postgres or MySQL database to score your
               own schema.
             </p>
             <Link href="/connect">
-              <Button size="sm" className="bg-sky-500/90 hover:bg-sky-500 text-zinc-950 cursor-pointer">
+              <Button size="sm" className="bg-hue-sky/90 hover:bg-hue-sky text-on-accent cursor-pointer">
                 Connect a database
               </Button>
             </Link>
@@ -182,23 +182,23 @@ export default function Dashboard() {
         {/* Catalog overview */}
         {live && g ? (
           <div className="mb-8">
-            <h2 className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Catalog Overview</h2>
+            <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-3">Catalog Overview</h2>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { label: "Tables", value: g.metrics.totalTables - g.metrics.views, icon: <Table2 className="w-4 h-4 text-blue-400" /> },
-                { label: "Views", value: g.metrics.views, icon: <Eye className="w-4 h-4 text-purple-400" /> },
-                { label: "Columns", value: g.metrics.totalColumns, icon: <FileText className="w-4 h-4 text-cyan-400" /> },
-                { label: "Relationships", value: catalog.foreignKeys.length, icon: <Link2 className="w-4 h-4 text-orange-400" /> },
+                { label: "Tables", value: g.metrics.totalTables - g.metrics.views, icon: <Table2 className="w-4 h-4 text-hue-blue" /> },
+                { label: "Views", value: g.metrics.views, icon: <Eye className="w-4 h-4 text-hue-purple" /> },
+                { label: "Columns", value: g.metrics.totalColumns, icon: <FileText className="w-4 h-4 text-hue-cyan" /> },
+                { label: "Relationships", value: catalog.foreignKeys.length, icon: <Link2 className="w-4 h-4 text-hue-orange" /> },
                 // reltuples is only populated once a table has been analysed;
                 // showing "0 rows" for a table full of data would be a lie.
-                { label: "Rows (approx)", value: g.metrics.approxRows, format: true, icon: <Rows3 className="w-4 h-4 text-pink-400" /> },
+                { label: "Rows (approx)", value: g.metrics.approxRows, format: true, icon: <Rows3 className="w-4 h-4 text-hue-pink" /> },
               ].map((e) => (
-                <Card key={e.label} className="p-4 border-zinc-800 bg-zinc-900">
+                <Card key={e.label} className="p-4 border-border bg-card">
                   <div className="flex items-center gap-2 mb-1">
                     {e.icon}
-                    <span className="text-xs text-zinc-500">{e.label}</span>
+                    <span className="text-sm text-muted-foreground">{e.label}</span>
                   </div>
-                  <p className="text-2xl font-bold text-zinc-100">
+                  <p className="text-3xl font-bold text-foreground">
                     {e.format ? (e.value > 0 ? formatCount(e.value) : "—") : e.value}
                   </p>
                 </Card>
@@ -208,21 +208,21 @@ export default function Dashboard() {
         ) : (
           entities && (
             <div className="mb-8">
-              <h2 className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Catalog Overview</h2>
+              <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-3">Catalog Overview</h2>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {[
-                  { label: "Tables", value: entities.tables, icon: <Table2 className="w-4 h-4 text-blue-400" /> },
-                  { label: "Dashboards", value: entities.dashboards, icon: <LayoutDashboard className="w-4 h-4 text-purple-400" /> },
-                  { label: "Pipelines", value: entities.pipelines, icon: <Workflow className="w-4 h-4 text-orange-400" /> },
-                  { label: "Topics", value: entities.topics, icon: <Radio className="w-4 h-4 text-cyan-400" /> },
-                  { label: "ML Models", value: entities.mlModels, icon: <Brain className="w-4 h-4 text-pink-400" /> },
+                  { label: "Tables", value: entities.tables, icon: <Table2 className="w-4 h-4 text-hue-blue" /> },
+                  { label: "Dashboards", value: entities.dashboards, icon: <LayoutDashboard className="w-4 h-4 text-hue-purple" /> },
+                  { label: "Pipelines", value: entities.pipelines, icon: <Workflow className="w-4 h-4 text-hue-orange" /> },
+                  { label: "Topics", value: entities.topics, icon: <Radio className="w-4 h-4 text-hue-cyan" /> },
+                  { label: "ML Models", value: entities.mlModels, icon: <Brain className="w-4 h-4 text-hue-pink" /> },
                 ].map((e) => (
-                  <Card key={e.label} className="p-4 border-zinc-800 bg-zinc-900">
+                  <Card key={e.label} className="p-4 border-border bg-card">
                     <div className="flex items-center gap-2 mb-1">
                       {e.icon}
-                      <span className="text-xs text-zinc-500">{e.label}</span>
+                      <span className="text-sm text-muted-foreground">{e.label}</span>
                     </div>
-                    <p className="text-2xl font-bold text-zinc-100">{e.value}</p>
+                    <p className="text-3xl font-bold text-foreground">{e.value}</p>
                   </Card>
                 ))}
               </div>
@@ -232,7 +232,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Score ring */}
-          <Card className="p-8 border-zinc-800 bg-zinc-900 flex flex-col items-center justify-center">
+          <Card className="p-8 border-border bg-card flex flex-col items-center justify-center">
             <div className="relative w-52 h-52">
               <svg className="w-52 h-52 -rotate-90" viewBox="0 0 200 200">
                 <circle cx="100" cy="100" r="88" stroke="#27272a" strokeWidth="8" fill="none" />
@@ -251,18 +251,18 @@ export default function Dashboard() {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className={`text-5xl font-bold ${getScoreColor(animatedScore)}`}>{animatedScore}</span>
-                <span className="text-zinc-500 text-sm mt-1">/ 100</span>
+                <span className="text-muted-foreground text-base mt-1">/ 100</span>
               </div>
             </div>
-            <p className="text-zinc-400 mt-4 text-sm">Governance Health Score</p>
+            <p className="text-muted-foreground mt-4 text-base">Governance Health Score</p>
             <Badge
               variant="outline"
               className={`mt-2 ${
                 score >= 80
-                  ? "border-green-500/30 text-green-400"
+                  ? "border-ok/30 text-ok"
                   : score >= 50
-                    ? "border-yellow-500/30 text-yellow-400"
-                    : "border-red-500/30 text-red-400"
+                    ? "border-warn/30 text-warn"
+                    : "border-critical/30 text-critical"
               }`}
             >
               {score >= 80 ? "Healthy" : score >= 50 ? "Needs Attention" : "Critical"}
@@ -338,10 +338,10 @@ export default function Dashboard() {
 
         {/* What's actually wrong */}
         {live && g && g.gaps.length > 0 && (
-          <Card className="mb-8 p-6 border-zinc-800 bg-zinc-900">
+          <Card className="mb-8 p-6 border-border bg-card">
             <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="w-4 h-4 text-amber-400" />
-              <h3 className="font-semibold text-zinc-200">What&apos;s dragging the score down</h3>
+              <AlertTriangle className="w-4 h-4 text-hue-amber" />
+              <h3 className="font-semibold text-foreground">What&apos;s dragging the score down</h3>
             </div>
             <div className="space-y-3">
               {g.gaps.map((gap) => (
@@ -349,15 +349,15 @@ export default function Dashboard() {
                   <span
                     className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${
                       gap.severity === "high"
-                        ? "bg-red-400"
+                        ? "bg-critical"
                         : gap.severity === "medium"
-                          ? "bg-yellow-400"
-                          : "bg-zinc-600"
+                          ? "bg-warn"
+                          : "bg-faint-foreground"
                     }`}
                   />
                   <div>
-                    <p className="text-sm text-zinc-200">{gap.title}</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">{gap.detail}</p>
+                    <p className="text-base text-foreground">{gap.title}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">{gap.detail}</p>
                   </div>
                 </div>
               ))}
@@ -367,13 +367,13 @@ export default function Dashboard() {
 
         {/* Data quality summary (OpenMetadata path only) */}
         {!live && quality && (
-          <Card className="mb-8 p-6 border-zinc-800 bg-zinc-900">
+          <Card className="mb-8 p-6 border-border bg-card">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <FlaskConical className="w-4 h-4 text-violet-400" />
-                <h3 className="font-semibold text-zinc-200">Data Quality</h3>
+                <FlaskConical className="w-4 h-4 text-hue-violet" />
+                <h3 className="font-semibold text-foreground">Data Quality</h3>
               </div>
-              <Link href="/quality" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+              <Link href="/quality" className="text-sm text-muted-foreground hover:text-foreground-subtle transition-colors">
                 View details →
               </Link>
             </div>
@@ -386,13 +386,13 @@ export default function Dashboard() {
               ].map((q) => (
                 <div key={q.label} className="text-center">
                   <p
-                    className={`text-2xl font-bold ${
-                      q.green ? "text-green-400" : q.red ? "text-red-400" : "text-zinc-100"
+                    className={`text-3xl font-bold ${
+                      q.green ? "text-ok" : q.red ? "text-critical" : "text-foreground"
                     }`}
                   >
                     {q.value}
                   </p>
-                  <p className="text-xs text-zinc-500 mt-0.5">{q.label}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{q.label}</p>
                 </div>
               ))}
             </div>
@@ -400,30 +400,30 @@ export default function Dashboard() {
         )}
 
         {/* Quick links */}
-        <h2 className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Quick Actions</h2>
+        <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-3">Quick Actions</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           {[
-            { href: "/pii-scanner", label: "Scan PII", icon: <Tag className="w-4 h-4 text-emerald-400" />, desc: live ? "Find personal data in real columns" : "Auto-tag sensitive columns" },
-            { href: "/quality", label: "Quality", icon: <FlaskConical className="w-4 h-4 text-violet-400" />, desc: live ? "Profile tables for defects" : "View test health" },
-            { href: "/lineage", label: "Lineage", icon: <GitFork className="w-4 h-4 text-blue-400" />, desc: live ? "Map foreign-key dependencies" : "Explore dependencies" },
-            { href: "/chat", label: "Ask a question", icon: <BookOpen className="w-4 h-4 text-amber-400" />, desc: "Query your schema in English" },
+            { href: "/pii-scanner", label: "Scan PII", icon: <Tag className="w-4 h-4 text-brand" />, desc: live ? "Find personal data in real columns" : "Auto-tag sensitive columns" },
+            { href: "/quality", label: "Quality", icon: <FlaskConical className="w-4 h-4 text-hue-violet" />, desc: live ? "Profile tables for defects" : "View test health" },
+            { href: "/lineage", label: "Lineage", icon: <GitFork className="w-4 h-4 text-hue-blue" />, desc: live ? "Map foreign-key dependencies" : "Explore dependencies" },
+            { href: "/chat", label: "Ask a question", icon: <BookOpen className="w-4 h-4 text-hue-amber" />, desc: "Query your schema in English" },
           ].map((a) => (
             <Link key={a.href} href={a.href}>
-              <Card className="p-4 border-zinc-800 bg-zinc-900 hover:bg-zinc-800/70 transition-colors cursor-pointer h-full">
+              <Card className="p-4 border-border bg-card hover:bg-muted/70 transition-colors cursor-pointer h-full">
                 <div className="flex items-center gap-2 mb-1.5">
                   {a.icon}
-                  <span className="text-sm font-medium text-zinc-200">{a.label}</span>
+                  <span className="text-base font-medium text-foreground">{a.label}</span>
                 </div>
-                <p className="text-xs text-zinc-500">{a.desc}</p>
+                <p className="text-sm text-muted-foreground">{a.desc}</p>
               </Card>
             </Link>
           ))}
         </div>
 
         {/* Score formula */}
-        <Card className="p-6 border-zinc-800 bg-zinc-900">
-          <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Score Formula</h3>
-          <div className="flex flex-wrap gap-3 text-sm">
+        <Card className="p-6 border-border bg-card">
+          <h3 className="text-base font-medium text-muted-foreground uppercase tracking-wider mb-3">Score Formula</h3>
+          <div className="flex flex-wrap gap-3 text-base">
             {(live
               ? [
                   "Table Descriptions × 0.30",
@@ -434,13 +434,13 @@ export default function Dashboard() {
               : ["Description Coverage × 0.35", "Column Tag Coverage × 0.35", "Table Tag Coverage × 0.30"]
             ).map((part, i, arr) => (
               <span key={part} className="flex items-center gap-3">
-                <code className="px-3 py-1.5 bg-zinc-800 rounded-lg text-zinc-300">{part}</code>
-                {i < arr.length - 1 && <span className="text-zinc-600">+</span>}
+                <code className="px-3 py-1.5 bg-muted rounded-lg text-foreground-subtle">{part}</code>
+                {i < arr.length - 1 && <span className="text-faint-foreground">+</span>}
               </span>
             ))}
           </div>
           {live && (
-            <p className="text-xs text-zinc-600 mt-3">
+            <p className="text-sm text-faint-foreground mt-3">
               A raw database has no tags or owners to count, so the score measures what a database can
               actually tell you: is it documented, is it keyed, and are its relationships declared.
             </p>
@@ -463,13 +463,13 @@ function MetricCard({
   unit: string;
 }) {
   return (
-    <Card className="p-4 border-zinc-800 bg-zinc-900">
+    <Card className="p-4 border-border bg-card">
       <div className="flex items-center gap-3">
-        <div className="text-zinc-500">{icon}</div>
+        <div className="text-muted-foreground">{icon}</div>
         <div>
-          <p className="text-xs text-zinc-500">{label}</p>
-          <p className="text-xl font-bold text-zinc-100">
-            {value} <span className="text-sm font-normal text-zinc-500">{unit}</span>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="text-2xl font-bold text-foreground">
+            {value} <span className="text-base font-normal text-muted-foreground">{unit}</span>
           </p>
         </div>
       </div>
@@ -491,21 +491,21 @@ function MetricBar({
   barColor: string;
 }) {
   return (
-    <Card className="p-4 border-zinc-800 bg-zinc-900">
+    <Card className="p-4 border-border bg-card">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="text-zinc-500">{icon}</div>
-          <p className="text-sm text-zinc-300">{label}</p>
+          <div className="text-muted-foreground">{icon}</div>
+          <p className="text-base text-foreground-subtle">{label}</p>
         </div>
-        <span className="text-sm font-bold text-zinc-100">{value}%</span>
+        <span className="text-base font-bold text-foreground">{value}%</span>
       </div>
-      <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ${barColor}`}
           style={{ width: `${value}%` }}
         />
       </div>
-      <p className="text-xs text-zinc-500 mt-1.5">{detail}</p>
+      <p className="text-sm text-muted-foreground mt-1.5">{detail}</p>
     </Card>
   );
 }

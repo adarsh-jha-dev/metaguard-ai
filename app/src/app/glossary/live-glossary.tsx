@@ -169,9 +169,9 @@ export default function LiveGlossary() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
-        <p className="text-sm text-zinc-500">Deriving a glossary from your schema…</p>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        <p className="text-base text-muted-foreground">Deriving a glossary from your schema…</p>
       </div>
     );
   }
@@ -179,30 +179,30 @@ export default function LiveGlossary() {
   const stats = report?.stats;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-5xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3 flex-wrap">
-            <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <BookOpen className="w-5 h-5 text-amber-400" />
+            <div className="p-2 rounded-lg bg-hue-amber/10 border border-hue-amber/20">
+              <BookOpen className="w-5 h-5 text-hue-amber" />
             </div>
-            <h1 className="text-2xl font-bold">Glossary AI Manager</h1>
+            <h1 className="text-3xl font-bold">Glossary AI Manager</h1>
             <SourcePill live label={connection?.database} />
           </div>
-          <p className="text-zinc-400 max-w-3xl">
+          <p className="text-muted-foreground max-w-3xl">
             Your database has no glossary to read, so MetaGuard builds one from the vocabulary already
             in it: every table is a business entity, every column name shared across tables is a common
-            attribute. Definitions come from your <span className="font-mono text-zinc-300">COMMENT</span>s
+            attribute. Definitions come from your <span className="font-mono text-foreground-subtle">COMMENT</span>s
             first, and from Gemini for everything left undefined.
           </p>
         </div>
 
         {error && (
-          <Card className="p-4 mb-6 border-red-500/30 bg-red-500/5">
+          <Card className="p-4 mb-6 border-critical/30 bg-critical/5">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
-              <p className="text-sm text-red-300">{error}</p>
+              <AlertTriangle className="w-4 h-4 text-critical mt-0.5 shrink-0" />
+              <p className="text-base text-critical">{error}</p>
             </div>
           </Card>
         )}
@@ -219,10 +219,10 @@ export default function LiveGlossary() {
         </div>
 
         {/* Definitions */}
-        <Card className="p-5 border-zinc-800 bg-zinc-900 mb-8">
+        <Card className="p-5 border-border bg-card mb-8">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+              <Sparkles className="w-4 h-4 text-hue-amber" />
               <h2 className="font-semibold">Definitions</h2>
             </div>
             <div className="flex gap-2">
@@ -230,7 +230,7 @@ export default function LiveGlossary() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-zinc-700 text-xs cursor-pointer"
+                  className="border-border-strong text-sm cursor-pointer"
                   onClick={() =>
                     download(
                       `${connection?.database ?? "glossary"}-glossary.csv`,
@@ -246,7 +246,7 @@ export default function LiveGlossary() {
                 size="sm"
                 onClick={writeDefinitions}
                 disabled={defining || !report || (stats?.totalTerms ?? 0) === 0}
-                className="bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+                className="bg-hue-amber hover:bg-hue-amber/85 text-on-accent cursor-pointer"
               >
                 {defining ? (
                   <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Writing…</>
@@ -256,23 +256,23 @@ export default function LiveGlossary() {
               </Button>
             </div>
           </div>
-          <p className="text-sm text-zinc-500 mt-3">
+          <p className="text-base text-muted-foreground mt-3">
             {report?.aiUsed
               ? "Gemini wrote the definitions marked AI below. Only table, column and type names were sent — never a row."
               : `${stats?.documentedTerms ?? 0} of ${stats?.totalTerms ?? 0} terms have a definition from a database comment. Ask Gemini to write the rest.`}
           </p>
           {report?.aiError && (
-            <p className="text-sm text-yellow-400 mt-2">{report.aiError}</p>
+            <p className="text-base text-warn mt-2">{report.aiError}</p>
           )}
         </Card>
 
         {/* Term suggestions for one table */}
-        <Card className="p-6 border-zinc-800 bg-zinc-900 mb-8">
+        <Card className="p-6 border-border bg-card mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <Link2 className="w-4 h-4 text-amber-400" />
+            <Link2 className="w-4 h-4 text-hue-amber" />
             <h2 className="font-semibold">Link terms to a table</h2>
           </div>
-          <p className="text-sm text-zinc-400 mb-4">
+          <p className="text-base text-muted-foreground mb-4">
             Pick a table and Gemini will match its columns against the derived terms. MetaGuard connects
             read-only, so accepted links are handed back as SQL for you to review and run — nothing is
             written to your database.
@@ -286,7 +286,7 @@ export default function LiveGlossary() {
                 setSuggestMsg(null);
                 setLinked({});
               }}
-              className="flex-1 min-w-[220px] bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-amber-500/50"
+              className="flex-1 min-w-[220px] bg-muted border border-border-strong rounded-lg px-3 py-2 text-base text-foreground focus:outline-none focus:border-hue-amber/50"
             >
               {tables.map((t) => (
                 <option key={t.fullyQualifiedName} value={t.fullyQualifiedName}>
@@ -297,7 +297,7 @@ export default function LiveGlossary() {
             <Button
               onClick={runSuggest}
               disabled={suggesting || !selected || (stats?.totalTerms ?? 0) === 0}
-              className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 cursor-pointer"
+              className="bg-hue-amber hover:bg-hue-amber/85 text-on-accent shrink-0 cursor-pointer"
             >
               {suggesting ? (
                 <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Matching…</>
@@ -308,7 +308,7 @@ export default function LiveGlossary() {
           </div>
 
           {suggestMsg && (
-            <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm">
+            <div className="mb-4 p-3 rounded-lg bg-warn/10 border border-warn/20 text-warn text-base">
               {suggestMsg}
             </div>
           )}
@@ -317,9 +317,9 @@ export default function LiveGlossary() {
             <>
               <div className="space-y-3">
                 {suggestions.map((s) => (
-                  <div key={s.column} className="rounded-lg border border-zinc-800 p-4 bg-zinc-800/30">
-                    <p className="font-mono text-sm text-zinc-200 mb-3">
-                      <span className="text-zinc-500">column:</span> {s.column}
+                  <div key={s.column} className="rounded-lg border border-border p-4 bg-muted/30">
+                    <p className="font-mono text-base text-foreground mb-3">
+                      <span className="text-muted-foreground">column:</span> {s.column}
                     </p>
                     <div className="space-y-2">
                       {s.suggestedTerms.map((term) => {
@@ -327,20 +327,20 @@ export default function LiveGlossary() {
                         return (
                           <div
                             key={term.fqn}
-                            className="flex items-start justify-between gap-3 p-2.5 rounded-lg bg-zinc-800/60 border border-zinc-700/50"
+                            className="flex items-start justify-between gap-3 p-2.5 rounded-lg bg-muted/60 border border-border-strong/50"
                           >
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 mb-0.5">
-                                <BookOpen className="w-3 h-3 text-amber-400 shrink-0" />
-                                <span className="text-sm text-zinc-200">{term.name}</span>
+                                <BookOpen className="w-3 h-3 text-hue-amber shrink-0" />
+                                <span className="text-base text-foreground">{term.name}</span>
                                 <Badge
                                   variant="outline"
-                                  className="text-[9px] border-amber-500/30 text-amber-500"
+                                  className="text-xs border-hue-amber/30 text-hue-amber"
                                 >
                                   {termByFqn.get(term.fqn)?.kind ?? "term"}
                                 </Badge>
                               </div>
-                              <p className="text-xs text-zinc-500 ml-5">{term.reason}</p>
+                              <p className="text-sm text-muted-foreground ml-5">{term.reason}</p>
                             </div>
                             <Button
                               size="sm"
@@ -354,8 +354,8 @@ export default function LiveGlossary() {
                               }
                               className={
                                 isLinked
-                                  ? "bg-green-900/30 text-green-400 border border-green-500/30 shrink-0 cursor-pointer"
-                                  : "bg-zinc-700 hover:bg-zinc-600 text-zinc-200 shrink-0 cursor-pointer"
+                                  ? "bg-ok/30 text-ok border border-ok/30 shrink-0 cursor-pointer"
+                                  : "bg-border-strong hover:bg-faint-foreground text-foreground shrink-0 cursor-pointer"
                               }
                             >
                               {isLinked ? (
@@ -374,14 +374,14 @@ export default function LiveGlossary() {
 
               {exportInput && links.length > 0 && (
                 <div className="flex items-center gap-2 mt-4 flex-wrap">
-                  <span className="text-xs text-zinc-500 mr-1">
+                  <span className="text-sm text-muted-foreground mr-1">
                     {links.length} {links.length === 1 ? "link" : "links"} selected
                   </span>
                   {connection?.dialect === "postgres" && (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-zinc-700 text-xs cursor-pointer"
+                      className="border-border-strong text-sm cursor-pointer"
                       onClick={() =>
                         download(
                           `${exportInput.table}-glossary.sql`,
@@ -397,7 +397,7 @@ export default function LiveGlossary() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-zinc-700 text-xs cursor-pointer"
+                    className="border-border-strong text-sm cursor-pointer"
                     onClick={() =>
                       download(
                         `${exportInput.table}-glossary-links.csv`,
@@ -415,12 +415,12 @@ export default function LiveGlossary() {
         </Card>
 
         {/* Derived glossaries */}
-        <h2 className="text-lg font-semibold mb-4">Derived terms</h2>
+        <h2 className="text-xl font-semibold mb-4">Derived terms</h2>
         {(report?.glossaries.length ?? 0) === 0 ? (
-          <Card className="p-8 border-zinc-800 bg-zinc-900 text-center text-zinc-500">
+          <Card className="p-8 border-border bg-card text-center text-muted-foreground">
             <BookOpen className="w-10 h-10 mx-auto mb-3 opacity-30" />
             <p>No terms could be derived from this schema.</p>
-            <p className="text-xs mt-1">
+            <p className="text-sm mt-1">
               MetaGuard needs at least one readable table to build a glossary.
             </p>
           </Card>
@@ -438,9 +438,9 @@ export default function LiveGlossary() {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <Card className="p-4 border-zinc-800 bg-zinc-900">
-      <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
+    <Card className="p-4 border-border bg-card">
+      <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-3xl font-bold">{value}</p>
     </Card>
   );
 }
@@ -457,48 +457,48 @@ function GlossaryCard({
   const Icon = glossary.kind === "entity" ? Table2 : Columns3;
 
   return (
-    <Card className="border-zinc-800 bg-zinc-900 overflow-hidden">
+    <Card className="border-border bg-card overflow-hidden">
       <button
-        className="w-full p-4 flex items-center gap-3 text-left hover:bg-zinc-800/50 transition-colors cursor-pointer"
+        className="w-full p-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors cursor-pointer"
         onClick={onToggle}
       >
         {open ? (
-          <ChevronDown className="w-4 h-4 text-zinc-500 shrink-0" />
+          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
         )}
-        <Icon className="w-4 h-4 text-amber-400 shrink-0" />
+        <Icon className="w-4 h-4 text-hue-amber shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-zinc-100">{glossary.name}</p>
-          <p className="text-xs text-zinc-500 truncate mt-0.5">{glossary.description}</p>
+          <p className="font-medium text-foreground">{glossary.name}</p>
+          <p className="text-sm text-muted-foreground truncate mt-0.5">{glossary.description}</p>
         </div>
-        <Badge variant="outline" className="border-amber-500/30 text-amber-400 shrink-0">
+        <Badge variant="outline" className="border-hue-amber/30 text-hue-amber shrink-0">
           {glossary.termCount} {glossary.termCount === 1 ? "term" : "terms"}
         </Badge>
       </button>
 
       {open && (
-        <div className="px-4 pb-4 border-t border-zinc-800">
+        <div className="px-4 pb-4 border-t border-border">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
             {glossary.terms.map((term) => (
-              <div key={term.fqn} className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
+              <div key={term.fqn} className="p-3 rounded-lg bg-muted/50 border border-border-strong/50">
                 <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <p className="text-sm font-medium text-zinc-200">{term.name}</p>
+                  <p className="text-base font-medium text-foreground">{term.name}</p>
                   {term.aiGenerated && (
                     <Badge
                       variant="outline"
-                      className="text-[9px] border-amber-500/30 text-amber-500 px-1 py-0"
+                      className="text-xs border-hue-amber/30 text-hue-amber px-1 py-0"
                     >
                       AI
                     </Badge>
                   )}
                 </div>
                 {term.description ? (
-                  <p className="text-xs text-zinc-500 mt-0.5">{term.description}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{term.description}</p>
                 ) : (
-                  <p className="text-xs text-zinc-700 mt-0.5 italic">No definition yet</p>
+                  <p className="text-sm text-faint-foreground mt-0.5 italic">No definition yet</p>
                 )}
-                <p className="text-[10px] text-zinc-600 mt-1.5 font-mono truncate">
+                <p className="text-xs text-faint-foreground mt-1.5 font-mono truncate">
                   {term.kind === "entity"
                     ? term.usedIn[0]
                     : `${term.sourceColumns.join(", ")} · ${term.usedIn.length} tables`}

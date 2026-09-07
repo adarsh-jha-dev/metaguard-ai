@@ -181,17 +181,17 @@ function Scanner() {
     : null;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
-              <Shield className="w-5 h-5 text-red-400" />
+            <div className="p-2 rounded-lg bg-critical/10 border border-critical/20">
+              <Shield className="w-5 h-5 text-critical" />
             </div>
-            <h1 className="text-2xl font-bold">PII Scanner</h1>
+            <h1 className="text-3xl font-bold">PII Scanner</h1>
             <SourcePill live={live} label={connection?.database} />
           </div>
-          <p className="text-zinc-400 max-w-3xl">
+          <p className="text-muted-foreground max-w-3xl">
             {live
               ? "Classifies every column using three independent signals: the column's name, what the sampled values actually look like, and Gemini's read of the schema."
               : "Exploring the sample catalog. Connect your own database to scan real columns — including the ones whose names give nothing away."}
@@ -199,14 +199,14 @@ function Scanner() {
         </div>
 
         {!live && (
-          <Card className="p-4 mb-6 bg-sky-500/5 border-sky-500/20 flex items-center justify-between gap-4 flex-wrap">
-            <p className="text-sm text-zinc-300">
+          <Card className="p-4 mb-6 bg-hue-sky/5 border-hue-sky/20 flex items-center justify-between gap-4 flex-wrap">
+            <p className="text-base text-foreground-subtle">
               Value-level detection only works on a live database — it&apos;s what catches PII in a column
-              called <span className="font-mono text-zinc-100">notes</span> or{" "}
-              <span className="font-mono text-zinc-100">field_7</span>.
+              called <span className="font-mono text-foreground">notes</span> or{" "}
+              <span className="font-mono text-foreground">field_7</span>.
             </p>
             <Link href="/connect">
-              <Button size="sm" className="bg-sky-500/90 hover:bg-sky-500 text-zinc-950 cursor-pointer">
+              <Button size="sm" className="bg-hue-sky/90 hover:bg-hue-sky text-on-accent cursor-pointer">
                 Connect a database
               </Button>
             </Link>
@@ -214,8 +214,8 @@ function Scanner() {
         )}
 
         {catalogError && live && (
-          <Card className="p-4 mb-6 bg-red-500/5 border-red-500/20">
-            <p className="text-sm text-red-300">{catalogError}</p>
+          <Card className="p-4 mb-6 bg-critical/5 border-critical/20">
+            <p className="text-base text-critical">{catalogError}</p>
           </Card>
         )}
 
@@ -223,19 +223,19 @@ function Scanner() {
           {/* ── Table list ─────────────────────────────────────────────── */}
           <div className="lg:col-span-1">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
-                Tables {tables.length > 0 && <span className="text-zinc-600">({tables.length})</span>}
+              <h2 className="text-base font-medium text-muted-foreground uppercase tracking-wider">
+                Tables {tables.length > 0 && <span className="text-faint-foreground">({tables.length})</span>}
               </h2>
             </div>
 
             {tables.length > 8 && (
               <div className="relative mb-3">
-                <Search className="w-3.5 h-3.5 text-zinc-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-faint-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
                   placeholder="Filter tables…"
-                  className="bg-zinc-900 border-zinc-800 pl-9 h-9 text-sm"
+                  className="bg-card border-border pl-9 h-9 text-base"
                 />
               </div>
             )}
@@ -246,42 +246,42 @@ function Scanner() {
                   type="checkbox"
                   checked={deepScan}
                   onChange={(e) => setDeepScan(e.target.checked)}
-                  className="accent-red-400 cursor-pointer"
+                  className="accent-critical cursor-pointer"
                 />
-                <span className="text-xs text-zinc-400">
-                  Profile values <span className="text-zinc-600">(aggregate counts only)</span>
+                <span className="text-sm text-muted-foreground">
+                  Profile values <span className="text-faint-foreground">(aggregate counts only)</span>
                 </span>
               </label>
             )}
 
             {loading ? (
-              <div className="flex items-center gap-2 text-zinc-500 text-sm py-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-base py-4">
                 <Loader2 className="w-4 h-4 animate-spin" /> Reading schema…
               </div>
             ) : visible.length === 0 ? (
-              <p className="text-sm text-zinc-600 py-4">No tables to show.</p>
+              <p className="text-base text-faint-foreground py-4">No tables to show.</p>
             ) : (
               <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-1">
                 {visible.map((table) => (
                   <Card
                     key={table.id}
-                    className={`p-3.5 cursor-pointer transition-all border bg-zinc-900 hover:bg-zinc-800 ${
+                    className={`p-3.5 cursor-pointer transition-all border bg-card hover:bg-muted ${
                       selected === table.fullyQualifiedName
-                        ? "border-red-500/50 bg-zinc-800"
-                        : "border-zinc-800"
+                        ? "border-critical/50 bg-muted"
+                        : "border-border"
                     }`}
                     onClick={() => scanTable(table)}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-medium text-zinc-100 text-sm truncate">{table.name}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5">
+                        <p className="font-medium text-foreground text-base truncate">{table.name}</p>
+                        <p className="text-sm text-muted-foreground mt-0.5">
                           {table.columns?.length ?? 0} columns
                           {table.schema ? ` · ${table.schema}` : ""}
                           {table.approxRows ? ` · ~${formatCount(table.approxRows)} rows` : ""}
                         </p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-zinc-600 shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-faint-foreground shrink-0" />
                     </div>
                   </Card>
                 ))}
@@ -292,10 +292,10 @@ function Scanner() {
           {/* ── Results ────────────────────────────────────────────────── */}
           <div className="lg:col-span-2">
             {scanning && (
-              <div className="flex flex-col items-center justify-center py-20 text-zinc-400">
-                <Loader2 className="w-8 h-8 animate-spin mb-4 text-red-400" />
+              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                <Loader2 className="w-8 h-8 animate-spin mb-4 text-critical" />
                 <p className="font-medium">{deepScan && live ? "Profiling columns…" : "Classifying columns…"}</p>
-                <p className="text-sm text-zinc-500 mt-1">
+                <p className="text-base text-muted-foreground mt-1">
                   {deepScan && live
                     ? "Running aggregate queries over a sample of rows"
                     : "This takes a few seconds"}
@@ -304,16 +304,16 @@ function Scanner() {
             )}
 
             {error && !scanning && (
-              <Card className="p-5 bg-red-500/5 border-red-500/20">
+              <Card className="p-5 bg-critical/5 border-critical/20">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
-                  <p className="text-sm text-red-300">{error}</p>
+                  <AlertTriangle className="w-4 h-4 text-critical mt-0.5 shrink-0" />
+                  <p className="text-base text-critical">{error}</p>
                 </div>
               </Card>
             )}
 
             {!scanning && !scanResult && !error && (
-              <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
+              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                 <Shield className="w-12 h-12 mb-4 opacity-20" />
                 <p>Select a table to scan for PII</p>
               </div>
@@ -323,18 +323,18 @@ function Scanner() {
               <div>
                 <div className="flex items-start justify-between mb-4 gap-4 flex-wrap">
                   <div>
-                    <h2 className="text-sm font-medium text-zinc-300">
+                    <h2 className="text-base font-medium text-foreground-subtle">
                       {scanResult.table.name}
                       {scanResult.table.schema && (
-                        <span className="text-zinc-600 font-normal"> · {scanResult.table.schema}</span>
+                        <span className="text-faint-foreground font-normal"> · {scanResult.table.schema}</span>
                       )}
                     </h2>
-                    <div className="flex gap-2 text-xs text-zinc-500 mt-1">
-                      <span className="text-red-400">{counts.sensitive} sensitive</span>
+                    <div className="flex gap-2 text-sm text-muted-foreground mt-1">
+                      <span className="text-critical">{counts.sensitive} sensitive</span>
                       <span>·</span>
-                      <span className="text-yellow-400">{counts.nonSensitive} non-sensitive</span>
+                      <span className="text-warn">{counts.nonSensitive} non-sensitive</span>
                       <span>·</span>
-                      <span className="text-green-400">{counts.clean} clean</span>
+                      <span className="text-ok">{counts.clean} clean</span>
                       {scanResult.scan?.sampledRows ? (
                         <>
                           <span>·</span>
@@ -350,7 +350,7 @@ function Scanner() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="border-zinc-700 text-xs cursor-pointer"
+                          className="border-border-strong text-sm cursor-pointer"
                           onClick={() =>
                             download(
                               `${exportInput.table}-pii-comments.sql`,
@@ -366,7 +366,7 @@ function Scanner() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-zinc-700 text-xs cursor-pointer"
+                        className="border-border-strong text-sm cursor-pointer"
                         onClick={() =>
                           download(`${exportInput.table}-pii.csv`, toCsv(exportInput), "text/csv")
                         }
@@ -376,7 +376,7 @@ function Scanner() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-zinc-700 text-xs cursor-pointer"
+                        className="border-border-strong text-sm cursor-pointer"
                         onClick={() =>
                           download(
                             `${exportInput.table}-pii.json`,
@@ -392,7 +392,7 @@ function Scanner() {
                 </div>
 
                 {live && scanResult.scan && (
-                  <p className="text-[11px] text-zinc-600 mb-3">
+                  <p className="text-xs text-faint-foreground mb-3">
                     Signals used:{" "}
                     {[
                       "column names",
@@ -447,30 +447,30 @@ function VerdictCard({
 
   const badgeColor =
     verdict.classification === "PII.Sensitive"
-      ? "bg-red-500/15 text-red-400 border-red-500/30"
+      ? "bg-critical/15 text-critical border-critical/30"
       : verdict.classification === "PII.NonSensitive"
-        ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/30"
-        : "bg-green-500/15 text-green-400 border-green-500/30";
+        ? "bg-warn/15 text-warn border-warn/30"
+        : "bg-ok/15 text-ok border-ok/30";
 
   return (
-    <Card className="p-4 border border-zinc-800 bg-zinc-900">
+    <Card className="p-4 border border-border bg-card">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-1 flex-wrap">
-            <p className="font-mono text-sm font-medium text-zinc-100">{verdict.column}</p>
+            <p className="font-mono text-base font-medium text-foreground">{verdict.column}</p>
             <Badge variant="outline" className={badgeColor}>
               {verdict.classification}
             </Badge>
-            <span className="text-xs text-zinc-600">{Math.round(verdict.confidence * 100)}%</span>
+            <span className="text-sm text-faint-foreground">{Math.round(verdict.confidence * 100)}%</span>
           </div>
-          <p className="text-xs text-zinc-500">{verdict.reason}</p>
+          <p className="text-sm text-muted-foreground">{verdict.reason}</p>
 
           {verdict.evidence.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {verdict.evidence.map((e) => (
                 <span
                   key={e.pattern}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-[10px] text-red-300"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-critical/10 border border-critical/20 text-xs text-critical"
                 >
                   <Beaker className="w-2.5 h-2.5" />
                   {e.matchPercent}% match {e.label}
@@ -480,7 +480,7 @@ function VerdictCard({
           )}
 
           {live && supportingSignals.length > 0 && (
-            <div className="flex flex-wrap gap-3 mt-2 text-[10px] text-zinc-600">
+            <div className="flex flex-wrap gap-3 mt-2 text-xs text-faint-foreground">
               {supportingSignals.map(({ key, Icon, text }) => (
                 <span key={key} className="inline-flex items-center gap-1">
                   <Icon className="w-2.5 h-2.5" /> {text}
@@ -493,14 +493,14 @@ function VerdictCard({
         {!live && verdict.classification !== "NotPII" && (
           <div className="ml-2 shrink-0">
             {verdict.approved ? (
-              <div className="flex items-center gap-1 text-green-400 text-xs">
+              <div className="flex items-center gap-1 text-ok text-sm">
                 <Check className="w-4 h-4" /> Tagged
               </div>
             ) : (
               <Button
                 size="sm"
                 variant="outline"
-                className="border-zinc-700 hover:border-red-500/50 text-xs cursor-pointer"
+                className="border-border-strong hover:border-critical/50 text-sm cursor-pointer"
                 disabled={approving}
                 onClick={onApprove}
               >

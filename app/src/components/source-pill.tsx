@@ -7,8 +7,8 @@ export function SourcePill({ live, label }: { live: boolean; label?: string }) {
       variant="outline"
       className={
         live
-          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px]"
-          : "border-zinc-700 bg-zinc-900 text-zinc-500 text-[10px]"
+          ? "border-brand/30 bg-brand/10 text-brand text-xs"
+          : "border-border-strong bg-card text-muted-foreground text-xs"
       }
     >
       {live ? `live · ${label}` : "sample catalog"}

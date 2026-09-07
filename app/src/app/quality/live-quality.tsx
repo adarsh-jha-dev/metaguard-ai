@@ -117,35 +117,35 @@ export default function LiveQuality() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20">
-              <FlaskConical className="w-5 h-5 text-violet-400" />
+            <div className="p-2 rounded-lg bg-hue-violet/10 border border-hue-violet/20">
+              <FlaskConical className="w-5 h-5 text-hue-violet" />
             </div>
-            <h1 className="text-2xl font-bold">Data Quality</h1>
+            <h1 className="text-3xl font-bold">Data Quality</h1>
             <SourcePill live label={connection?.database} />
           </div>
-          <p className="text-zinc-400 max-w-3xl">
+          <p className="text-muted-foreground max-w-3xl">
             Your database has no test suite, so MetaGuard writes one for it — profiling each table and
             checking completeness, uniqueness, and cardinality against what the schema promises.
           </p>
         </div>
 
         {/* Table picker */}
-        <Card className="p-5 mb-6 bg-zinc-900 border-zinc-800">
+        <Card className="p-5 mb-6 bg-card border-border">
           <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
             <div>
-              <p className="text-sm font-medium text-zinc-200">Tables to profile</p>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-base font-medium text-foreground">Tables to profile</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {selected.length === 0
                   ? "Nothing selected — the 8 largest tables will be profiled."
                   : `${selected.length} selected`}
                 {" · "}
                 <button
                   onClick={() => setSelected([])}
-                  className="text-zinc-400 hover:text-zinc-200 cursor-pointer underline underline-offset-2"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer underline underline-offset-2"
                 >
                   clear
                 </button>
@@ -154,7 +154,7 @@ export default function LiveQuality() {
             <Button
               onClick={run}
               disabled={running}
-              className="bg-violet-500/90 hover:bg-violet-500 text-zinc-950 font-medium cursor-pointer"
+              className="bg-hue-violet/90 hover:bg-hue-violet text-on-accent font-medium cursor-pointer"
             >
               {running ? (
                 <>
@@ -183,10 +183,10 @@ export default function LiveQuality() {
                           : [...prev, t.fullyQualifiedName]
                     )
                   }
-                  className={`px-2.5 py-1 rounded-md text-xs font-mono border transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-md text-sm font-mono border transition-colors cursor-pointer ${
                     on
-                      ? "bg-violet-500/15 border-violet-500/40 text-violet-300"
-                      : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                      ? "bg-hue-violet/15 border-hue-violet/40 text-hue-violet"
+                      : "bg-background border-border text-muted-foreground hover:border-border-strong"
                   }`}
                 >
                   {t.name}
@@ -195,20 +195,20 @@ export default function LiveQuality() {
             })}
           </div>
           {selected.length >= 8 && (
-            <p className="text-[11px] text-zinc-600 mt-2">
+            <p className="text-xs text-faint-foreground mt-2">
               Eight tables per run keeps each request inside the serverless timeout.
             </p>
           )}
         </Card>
 
         {error && (
-          <Card className="p-4 mb-6 bg-red-500/5 border-red-500/20">
-            <p className="text-sm text-red-300">{error}</p>
+          <Card className="p-4 mb-6 bg-critical/5 border-critical/20">
+            <p className="text-base text-critical">{error}</p>
           </Card>
         )}
 
         {!result && !running && (
-          <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <FlaskConical className="w-12 h-12 mb-4 opacity-20" />
             <p>Run the checks to profile your tables</p>
           </div>
@@ -219,35 +219,35 @@ export default function LiveQuality() {
             {/* Summary */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               {[
-                { label: "Checks run", value: result.summary.total, color: "text-zinc-100" },
-                { label: "Passed", value: result.summary.passed, color: "text-green-400" },
-                { label: "Failed", value: result.summary.failed, color: "text-red-400" },
-                { label: "Warnings", value: result.summary.warning, color: "text-yellow-400" },
+                { label: "Checks run", value: result.summary.total, color: "text-foreground" },
+                { label: "Passed", value: result.summary.passed, color: "text-ok" },
+                { label: "Failed", value: result.summary.failed, color: "text-critical" },
+                { label: "Warnings", value: result.summary.warning, color: "text-warn" },
               ].map((s) => (
-                <Card key={s.label} className="p-4 border-zinc-800 bg-zinc-900 text-center">
-                  <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">{s.label}</p>
+                <Card key={s.label} className="p-4 border-border bg-card text-center">
+                  <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{s.label}</p>
                 </Card>
               ))}
             </div>
 
-            <Card className="p-5 mb-6 border-zinc-800 bg-zinc-900">
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-2">
+            <Card className="p-5 mb-6 border-border bg-card">
+              <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
                 <span>
                   Pass rate across {result.profiledTables.length} profiled table
                   {result.profiledTables.length === 1 ? "" : "s"}
                   {result.limited && ` (of ${result.totalTables} total)`}
                 </span>
                 <span
-                  className={passRate >= 80 ? "text-green-400" : passRate >= 50 ? "text-yellow-400" : "text-red-400"}
+                  className={passRate >= 80 ? "text-ok" : passRate >= 50 ? "text-warn" : "text-critical"}
                 >
                   {passRate}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${
-                    passRate >= 80 ? "bg-green-500" : passRate >= 50 ? "bg-yellow-500" : "bg-red-500"
+                    passRate >= 80 ? "bg-ok" : passRate >= 50 ? "bg-warn" : "bg-critical"
                   }`}
                   style={{ width: `${passRate}%` }}
                 />
@@ -256,7 +256,7 @@ export default function LiveQuality() {
 
             {failing.length > 0 && (
               <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-                <p className="text-sm text-zinc-400">
+                <p className="text-base text-muted-foreground">
                   {failing.length} failing check{failing.length === 1 ? "" : "s"} — ask Gemini what to do
                   about them.
                 </p>
@@ -265,7 +265,7 @@ export default function LiveQuality() {
                   disabled={analyzing}
                   size="sm"
                   variant="outline"
-                  className="border-zinc-700 cursor-pointer"
+                  className="border-border-strong cursor-pointer"
                 >
                   {analyzing ? (
                     <>
@@ -283,27 +283,27 @@ export default function LiveQuality() {
             {analysis.length > 0 && (
               <div className="space-y-2 mb-8">
                 {analysis.map((a) => (
-                  <Card key={a.testName} className="p-4 border-zinc-800 bg-zinc-900">
+                  <Card key={a.testName} className="p-4 border-border bg-card">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge
                         variant="outline"
                         className={
                           a.severity === "high"
-                            ? "border-red-500/30 text-red-400 text-[10px]"
+                            ? "border-critical/30 text-critical text-xs"
                             : a.severity === "medium"
-                              ? "border-yellow-500/30 text-yellow-400 text-[10px]"
-                              : "border-zinc-700 text-zinc-400 text-[10px]"
+                              ? "border-warn/30 text-warn text-xs"
+                              : "border-border-strong text-muted-foreground text-xs"
                         }
                       >
                         {a.severity}
                       </Badge>
-                      <p className="text-sm text-zinc-200">{a.testName}</p>
+                      <p className="text-base text-foreground">{a.testName}</p>
                     </div>
-                    <p className="text-xs text-zinc-500 mb-1">
-                      <span className="text-zinc-400">Likely cause:</span> {a.likelyCause}
+                    <p className="text-sm text-muted-foreground mb-1">
+                      <span className="text-muted-foreground">Likely cause:</span> {a.likelyCause}
                     </p>
-                    <p className="text-xs text-zinc-500">
-                      <span className="text-zinc-400">Suggested fix:</span> {a.suggestedFix}
+                    <p className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground">Suggested fix:</span> {a.suggestedFix}
                     </p>
                   </Card>
                 ))}
@@ -317,38 +317,38 @@ export default function LiveQuality() {
                 const failed = checks.filter((c) => c.status === "failed").length;
                 const warned = checks.filter((c) => c.status === "warning").length;
                 return (
-                  <Card key={table} className="border-zinc-800 bg-zinc-900 overflow-hidden">
+                  <Card key={table} className="border-border bg-card overflow-hidden">
                     <button
                       onClick={() => toggle(table)}
-                      className="w-full p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors cursor-pointer"
+                      className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         {open ? (
-                          <ChevronDown className="w-4 h-4 text-zinc-600 shrink-0" />
+                          <ChevronDown className="w-4 h-4 text-faint-foreground shrink-0" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 text-zinc-600 shrink-0" />
+                          <ChevronRight className="w-4 h-4 text-faint-foreground shrink-0" />
                         )}
-                        <span className="text-sm font-medium text-zinc-200 truncate">
+                        <span className="text-base font-medium text-foreground truncate">
                           {checks[0]?.tableName ?? table}
                         </span>
-                        <span className="text-xs text-zinc-600">{checks.length} checks</span>
+                        <span className="text-sm text-faint-foreground">{checks.length} checks</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {failed > 0 && (
-                          <Badge variant="outline" className="border-red-500/30 text-red-400 text-[10px]">
+                          <Badge variant="outline" className="border-critical/30 text-critical text-xs">
                             {failed} failed
                           </Badge>
                         )}
                         {warned > 0 && (
                           <Badge
                             variant="outline"
-                            className="border-yellow-500/30 text-yellow-400 text-[10px]"
+                            className="border-warn/30 text-warn text-xs"
                           >
                             {warned} warning
                           </Badge>
                         )}
                         {failed === 0 && warned === 0 && (
-                          <Badge variant="outline" className="border-green-500/30 text-green-400 text-[10px]">
+                          <Badge variant="outline" className="border-ok/30 text-ok text-xs">
                             all passed
                           </Badge>
                         )}
@@ -356,16 +356,16 @@ export default function LiveQuality() {
                     </button>
 
                     {open && (
-                      <div className="border-t border-zinc-800 divide-y divide-zinc-800/70">
+                      <div className="border-t border-border divide-y divide-border/70">
                         {[...checks]
                           .sort((a, b) => rank(a.status) - rank(b.status))
                           .map((check) => (
                             <div key={check.id} className="px-4 py-3 flex items-start gap-3">
                               <StatusIcon status={check.status} />
                               <div className="min-w-0">
-                                <p className="text-sm text-zinc-200">{check.name}</p>
-                                <p className="text-xs text-zinc-500 mt-0.5">{check.detail}</p>
-                                <p className="text-[10px] text-zinc-700 mt-1 font-mono">{check.testType}</p>
+                                <p className="text-base text-foreground">{check.name}</p>
+                                <p className="text-sm text-muted-foreground mt-0.5">{check.detail}</p>
+                                <p className="text-xs text-faint-foreground mt-1 font-mono">{check.testType}</p>
                               </div>
                             </div>
                           ))}
@@ -387,7 +387,7 @@ function rank(status: QualityCheck["status"]) {
 }
 
 function StatusIcon({ status }: { status: QualityCheck["status"] }) {
-  if (status === "passed") return <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />;
-  if (status === "failed") return <XCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />;
-  return <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />;
+  if (status === "passed") return <CheckCircle2 className="w-4 h-4 text-ok mt-0.5 shrink-0" />;
+  if (status === "failed") return <XCircle className="w-4 h-4 text-critical mt-0.5 shrink-0" />;
+  return <AlertTriangle className="w-4 h-4 text-warn mt-0.5 shrink-0" />;
 }
