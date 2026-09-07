@@ -5,11 +5,44 @@ import { NextResponse } from "next/server";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
+/** Keyword search over the bundled catalog, for when OpenMetadata isn't reachable. */
+function searchDemoTables(query: string) {
+  const q = query.trim().toLowerCase();
+  const matches = DEMO_TABLES.data.filter((t) => {
+    if (!q) return true;
+    return (
+      t.name.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q) ||
+      t.columns.some(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.tags?.some((tag) => tag.tagFQN.toLowerCase().includes(q))
+      )
+    );
+  });
+  // Tags are the point of most searches here ("which tables have PII?"), so
+  // they travel with the columns rather than being summarised away.
+  return (matches.length > 0 ? matches : DEMO_TABLES.data).map((t) => ({
+    name: t.name,
+    fqn: t.fullyQualifiedName,
+    description: t.description,
+    columns: t.columns.map((c) => ({
+      name: c.name,
+      type: c.dataType,
+      tags: c.tags?.map((tag) => tag.tagFQN) ?? [],
+    })),
+  }));
+}
+
 async function executeQuery(intent: string, query: string) {
   try {
     if (intent === "search") {
-      const results = await searchTables(query);
-      return JSON.stringify(results.hits?.hits?.map((h: { _source: unknown }) => h._source) || []);
+      try {
+        const results = await searchTables(query);
+        const hits = results.hits?.hits?.map((h: { _source: unknown }) => h._source) || [];
+        if (hits.length > 0) return JSON.stringify(hits);
+      } catch { /* fall through to demo */ }
+      return JSON.stringify(searchDemoTables(query));
     }
     if (intent === "list_tables") {
       try {

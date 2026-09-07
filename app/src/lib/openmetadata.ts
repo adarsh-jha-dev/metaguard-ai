@@ -1,7 +1,11 @@
-const OM_BASE = process.env.OPENMETADATA_URL || "http://localhost:8585/api/v1";
+const OM_BASE = process.env.OPENMETADATA_URL;
 const OM_TOKEN = process.env.OPENMETADATA_TOKEN || "";
 
 async function omFetch(endpoint: string, options?: RequestInit) {
+  // Defaulting to localhost made a deploy without OpenMetadata look like a
+  // hanging request instead of a missing config. Callers fall back to the
+  // sample catalog when this throws.
+  if (!OM_BASE) throw new Error("OPENMETADATA_URL is not configured");
   const res = await fetch(`${OM_BASE}${endpoint}`, {
     ...options,
     headers: {
