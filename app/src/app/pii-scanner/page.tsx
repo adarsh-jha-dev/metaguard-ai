@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +23,7 @@ import type { ColumnVerdict } from "@/lib/db/classify";
 import type { TableProfile } from "@/lib/db/types";
 import { download, toCsv, toJson, toPostgresComments } from "@/lib/report";
 import { SourcePill, formatCount } from "@/components/source-pill";
+import { SampleCatalogNotice } from "@/components/sample-catalog-notice";
 
 type TableRow = {
   id: string;
@@ -198,20 +198,11 @@ function Scanner() {
           </p>
         </div>
 
-        {!live && (
-          <Card className="p-4 mb-6 bg-hue-sky/5 border-hue-sky/20 flex items-center justify-between gap-4 flex-wrap">
-            <p className="text-base text-foreground-subtle">
-              Value-level detection only works on a live database — it&apos;s what catches PII in a column
-              called <span className="font-mono text-foreground">notes</span> or{" "}
-              <span className="font-mono text-foreground">field_7</span>.
-            </p>
-            <Link href="/connect">
-              <Button size="sm" className="bg-hue-sky/90 hover:bg-hue-sky text-on-accent cursor-pointer">
-                Connect a database
-              </Button>
-            </Link>
-          </Card>
-        )}
+        <SampleCatalogNotice>
+          Value-level detection only works on a live database — it&apos;s what catches PII in a column
+          called <span className="font-mono text-foreground">notes</span> or{" "}
+          <span className="font-mono text-foreground">field_7</span>.
+        </SampleCatalogNotice>
 
         {catalogError && live && (
           <Card className="p-4 mb-6 bg-critical/5 border-critical/20">

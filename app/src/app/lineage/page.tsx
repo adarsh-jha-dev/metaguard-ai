@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, GitFork, Search, ArrowRight, Database, LayoutDashboard, Workflow, Radio } from "lucide-react";
 import { useConnection } from "@/lib/connection-context";
 import LiveLineage from "./live-lineage";
+import { SampleCatalogNotice } from "@/components/sample-catalog-notice";
 
 type LineageNode = {
   id: string;
@@ -132,6 +133,11 @@ function OpenMetadataLineage() {
             Explore upstream and downstream data dependencies for any asset in your catalog.
           </p>
         </div>
+
+        <SampleCatalogNotice>
+          This graph comes from the sample catalog. Connect a database to map your own foreign keys
+          and see what breaks before you drop a table.
+        </SampleCatalogNotice>
 
         {/* Search */}
         <Card className="p-4 border-border bg-card mb-8">

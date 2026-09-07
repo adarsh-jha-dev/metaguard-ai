@@ -10,6 +10,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useConnection } from "@/lib/connection-context";
 import { SourcePill } from "@/components/source-pill";
+import { SampleCatalogNotice } from "@/components/sample-catalog-notice";
 
 type Message = {
   role: "user" | "assistant";
@@ -114,6 +115,11 @@ export default function Chat() {
               : "Ask questions about your data in plain English — powered by AI and OpenMetadata."}
           </p>
         </div>
+
+        <SampleCatalogNotice>
+          You&apos;re chatting about the sample catalog. Connect a database to ask questions about
+          your own schema — the model still only ever sees structure.
+        </SampleCatalogNotice>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto space-y-4 mb-4">

@@ -27,6 +27,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useConnection } from "@/lib/connection-context";
 import { SourcePill, formatCount } from "@/components/source-pill";
+import { SampleCatalogNotice } from "@/components/sample-catalog-notice";
 
 type Metrics = {
   totalTables: number;
@@ -165,19 +166,10 @@ export default function Dashboard() {
           </Card>
         )}
 
-        {!live && (
-          <Card className="p-4 mb-8 bg-hue-sky/5 border-hue-sky/20 flex items-center justify-between gap-4 flex-wrap">
-            <p className="text-base text-foreground-subtle">
-              This is the built-in sample catalog. Connect a Postgres or MySQL database to score your
-              own schema.
-            </p>
-            <Link href="/connect">
-              <Button size="sm" className="bg-hue-sky/90 hover:bg-hue-sky text-on-accent cursor-pointer">
-                Connect a database
-              </Button>
-            </Link>
-          </Card>
-        )}
+        <SampleCatalogNotice>
+          This is the built-in sample catalog. Connect a Postgres or MySQL database to score your
+          own schema.
+        </SampleCatalogNotice>
 
         {/* Catalog overview */}
         {live && g ? (

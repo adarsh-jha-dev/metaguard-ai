@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Activity, Sparkles, MessageSquare, Database, LayoutDashboard, Workflow, Radio, RefreshCw } from "lucide-react";
 import { useConnection } from "@/lib/connection-context";
 import LiveActivity from "./live-activity";
+import { SampleCatalogNotice } from "@/components/sample-catalog-notice";
 
 type FeedItem = {
   id: string;
@@ -106,6 +107,11 @@ function OpenMetadataActivity() {
             Real-time conversations, tasks, and announcements from your OpenMetadata instance.
           </p>
         </div>
+
+        <SampleCatalogNotice>
+          This feed is from the sample catalog. Connect a database to read your own write activity
+          and vacuum status.
+        </SampleCatalogNotice>
 
         {/* AI Summary Card */}
         <Card className="p-5 border-border bg-card mb-8">

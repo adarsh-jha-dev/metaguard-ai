@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useConnection } from "@/lib/connection-context";
 import LiveQuality from "./live-quality";
+import { SampleCatalogNotice } from "@/components/sample-catalog-notice";
 
 type Suite = {
   id: string;
@@ -154,6 +155,11 @@ function OpenMetadataQuality() {
             Live test suite health from OpenMetadata — powered by AI failure analysis.
           </p>
         </div>
+
+        <SampleCatalogNotice>
+          These are OpenMetadata&apos;s test suites. Connect a Postgres or MySQL database and
+          MetaGuard will profile your tables and generate the checks itself.
+        </SampleCatalogNotice>
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">

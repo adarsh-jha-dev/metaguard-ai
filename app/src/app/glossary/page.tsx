@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useConnection } from "@/lib/connection-context";
 import LiveGlossary from "./live-glossary";
+import { SampleCatalogNotice } from "@/components/sample-catalog-notice";
 
 type GlossaryTerm = {
   id: string;
@@ -181,6 +182,11 @@ function OpenMetadataGlossary() {
             Browse business glossaries and let Gemini AI suggest relevant terms for your tables.
           </p>
         </div>
+
+        <SampleCatalogNotice>
+          These glossaries come from OpenMetadata. Connect a database and MetaGuard will derive a
+          glossary from your own schema instead.
+        </SampleCatalogNotice>
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">
